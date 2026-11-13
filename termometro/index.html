@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Termômetro do Bitcoin</title>
+<meta name="description" content="Em que fase do ciclo o Bitcoin está? Indicadores on-chain e macro reunidos numa nota de -2 a +2, atualizada todo dia.">
+<meta name="theme-color" content="#171717">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Inter+Tight:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Brand kit Estratégia Bitcoin, mundo escuro do Substack. Layout: painel de leitura rápida no topo, detalhe abaixo, metodologia em faixa clara. */
+  --fundo:#171717;
+  --superficie:#1f1f1f;
+  --superficie-2:#262626;
+  --texto:#ffffff;
+  --texto-suave:#a3a3a3;
+  --texto-fraco:#737373;
+  --linha:#333333;
+  --verde-botao:#15803d;
+  --amarelo-ouro:#fddd10;
+  --azul-anil:#21428b;
+  /* Zonas do termômetro: frio = valor, quente = euforia */
+  --z2:#3d74e0;   /* valor extremo */
+  --z1:#8fb0ee;   /* valor */
+  --z0:#7a7a7a;   /* neutro */
+  --zm1:#f2c94c;  /* aquecido */
+  --zm2:#e5534b;  /* euforia */
+  --display:"Inter Tight","SF Pro Display",system-ui,-apple-system,sans-serif;
+  --sans:Inter,"SF Pro Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --wrap:1180px;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--fundo);color:var(--texto);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2,h3,h4,p{margin:0}
+img{max-width:100%;display:block}
+:focus-visible{outline:3px solid var(--amarelo-ouro);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+.disp{font-family:var(--display);font-weight:800;letter-spacing:-.02em;line-height:1.04;text-wrap:balance}
+.rotulo{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--texto-suave)}
+.num{font-variant-numeric:tabular-nums}
+.u{text-decoration:underline;text-decoration-color:var(--amarelo-ouro);text-decoration-thickness:.09em;text-underline-offset:.14em;text-decoration-skip-ink:none}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:46px;padding:0 20px;font-family:var(--sans);font-weight:700;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;border-radius:8px;border:1.5px solid transparent;cursor:pointer}
+.btn-green{background:var(--verde-botao);color:#fff}
+.btn-green:hover{background:#166534}
+.btn-sm{min-height:40px;padding:0 14px;font-size:.76rem}
+
+/* Cabeçalho */
+.top{position:sticky;top:0;z-index:30;background:rgba(23,23,23,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
+.top .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo img{width:38px;height:auto;border-radius:2px}
+.logo b{font-family:var(--display);font-weight:800;font-size:1.1rem;letter-spacing:-.01em;white-space:nowrap}
+.nav{display:flex;gap:24px;margin-left:auto}
+.nav a{font-weight:600;font-size:.9rem;text-decoration:none;color:var(--texto-suave)}
+.nav a:hover,.nav a[aria-current]{color:#fff}
+
+/* Aviso de protótipo */
+.aviso{background:#2a2608;border-bottom:1px solid #4a420b;color:#f5e9a3;font-size:.86rem}
+.aviso .wrap{display:flex;gap:10px;align-items:center;padding-top:10px;padding-bottom:10px}
+.aviso b{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:var(--amarelo-ouro);color:#171717;padding:2px 7px;border-radius:4px;flex:none}
+
+/* Topo: leitura do termômetro */
+.hero{padding:48px 0 40px;border-bottom:1px solid var(--linha)}
+.hero h1{margin-top:12px;font-size:clamp(2.1rem,4.6vw,3.4rem);max-width:16em}
+.hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:40px;margin-top:32px;align-items:stretch}
+.leitura{background:var(--superficie);border:1px solid var(--linha);border-radius:14px;padding:28px}
+.leitura-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.score{font-family:var(--display);font-weight:800;font-size:clamp(3.6rem,8vw,5.4rem);line-height:.9;letter-spacing:-.03em}
+.zona-nome{font-family:var(--display);font-weight:800;font-size:1.7rem;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.zona-dot{width:14px;height:14px;border-radius:50%;flex:none}
+.leitura-sub{color:var(--texto-suave);font-size:.92rem;margin-top:6px}
+.escala{margin-top:28px;position:relative}
+.escala-barra{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;height:14px;border-radius:7px;overflow:hidden}
+.escala-barra span:nth-child(1){background:var(--z2)}
+.escala-barra span:nth-child(2){background:var(--z1)}
+.escala-barra span:nth-child(3){background:var(--z0)}
+.escala-barra span:nth-child(4){background:var(--zm1)}
+.escala-barra span:nth-child(5){background:var(--zm2)}
+.escala-rotulos{display:grid;grid-template-columns:repeat(5,1fr);margin-top:10px;font-size:.78rem;color:var(--texto-suave);text-align:center}
+.escala-rotulos span:first-child{text-align:left}
+.escala-rotulos span:last-child{text-align:right}
+.marcador{position:absolute;top:-9px;width:4px;height:32px;margin-left:-2px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px var(--superficie);transition:left .4s ease}
+.marcador::after{content:"";position:absolute;top:-7px;left:-5px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+.contagem{display:flex;gap:6px;flex-wrap:wrap;margin-top:22px}
+.mini-chip{font-family:var(--mono);font-size:.72rem;padding:4px 8px;border-radius:6px;background:var(--superficie-2);color:var(--texto-suave);display:inline-flex;gap:6px;align-items:center}
+.mini-chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+.numeros{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:14px;overflow:hidden}
+.numero{background:var(--fundo);padding:20px}
+.numero .v{font-family:var(--display);font-weight:800;font-size:1.65rem;letter-spacing:-.02em;margin-top:6px}
+.numero .d{color:var(--texto-suave);font-size:.82rem;margin-top:2px}
+.neg{color:#f19a94}.pos{color:#86d39b}
+
+/* Seções */
+.sec{padding:56px 0;border-bottom:1px solid var(--linha)}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:24px}
+.sec-head h2{font-size:clamp(1.6rem,3vw,2.2rem);margin-top:8px}
+.sec-head p{color:var(--texto-suave);max-width:36em;margin-top:8px}
+
+/* Cartões de indicador */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{background:var(--superficie);border:1px solid var(--linha);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;border-left:4px solid var(--z0);transition:opacity .2s ease}
+.card.off{opacity:.5}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.card h3{font-family:var(--display);font-weight:700;font-size:1.08rem;letter-spacing:-.005em}
+.card .val{font-family:var(--display);font-weight:800;font-size:2rem;letter-spacing:-.02em;line-height:1}
+.chip{font-family:var(--mono);font-size:.72rem;font-weight:600;letter-spacing:.04em;padding:4px 9px;border-radius:999px;white-space:nowrap;color:#171717}
+.card p{color:var(--texto-suave);font-size:.88rem}
+.regua{position:relative;padding-top:4px}
+.regua-barra{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;height:6px}
+.regua-barra span{border-radius:1px;opacity:.85}
+.regua-cortes{position:relative;height:16px;font-family:var(--mono);font-size:.66rem;color:var(--texto-fraco)}
+.regua-cortes span{position:absolute;transform:translateX(-50%);top:3px}
+.regua-pino{position:absolute;top:-1px;width:3px;height:16px;margin-left:-1.5px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px var(--superficie)}
+.toggle{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--texto-suave);cursor:pointer;user-select:none;margin-top:auto}
+.toggle input{position:absolute;opacity:0;width:1px;height:1px}
+.sw{width:36px;height:20px;border-radius:999px;background:#404040;position:relative;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle input:checked + .sw{background:var(--verde-botao)}
+.toggle input:checked + .sw::after{transform:translateX(16px)}
+.toggle input:focus-visible + .sw{outline:3px solid var(--amarelo-ouro);outline-offset:2px}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.btn-ghost{background:transparent;border:1px solid var(--linha);color:var(--texto-suave);font-family:var(--sans);font-weight:600;font-size:.84rem;padding:8px 12px;border-radius:8px;cursor:pointer}
+.btn-ghost:hover{color:#fff;border-color:#555}
+.btn-ghost[aria-pressed="true"]{background:#fff;color:#171717;border-color:#fff}
+
+/* Gráficos */
+.grafico-box{background:var(--superficie);border:1px solid var(--linha);border-radius:14px;padding:20px 16px 12px}
+.grafico-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:0 4px 12px}
+.grafico-head h3{font-family:var(--display);font-weight:700;font-size:1rem}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--texto-suave)}
+.legenda span{display:inline-flex;align-items:center;gap:6px}
+.legenda i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.grafico{position:relative}
+.grafico svg{display:block;width:100%;height:auto;overflow:visible}
+.grafico svg text{font-family:var(--mono);font-size:11px;fill:var(--texto-fraco)}
+.tip{position:absolute;pointer-events:none;background:#0d0d0d;border:1px solid #444;border-radius:8px;padding:10px 12px;font-size:.8rem;min-width:170px;opacity:0;transition:opacity .1s;z-index:5}
+.tip b{font-family:var(--mono);font-size:.72rem;color:var(--texto-suave);font-weight:500;display:block;margin-bottom:4px}
+.tip .l{display:flex;justify-content:space-between;gap:14px}
+.tabela-wrap{overflow-x:auto;margin-top:14px}
+details summary{cursor:pointer;color:var(--texto-suave);font-size:.86rem;padding:6px 4px}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--linha);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-suave)}
+
+/* Macro */
+.macro{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.mcard{background:var(--superficie);border:1px solid var(--linha);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.mcard .v{font-family:var(--display);font-weight:800;font-size:1.7rem;letter-spacing:-.02em;line-height:1.05}
+.mcard .un{color:var(--texto-suave);font-size:.8rem}
+.mcard p{font-size:.84rem;color:#d4d4d4}
+.mcard .fonte{font-family:var(--mono);font-size:.66rem;color:var(--texto-fraco);margin-top:auto;letter-spacing:.02em}
+
+/* Metodologia (faixa clara) */
+.light{background:#fff;color:#171717;color-scheme:light}
+.light .rotulo{color:#525252}
+.light .sec-head p{color:#525252}
+.metodo{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.metodo h3{font-family:var(--display);font-weight:800;font-size:1.25rem;margin-bottom:10px}
+.metodo p{color:#404040;margin-bottom:12px;max-width:36em}
+.light table th{color:#525252}
+.light th,.light td{border-bottom-color:#e5e5e5}
+.zchip{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.zchip i{width:10px;height:10px;border-radius:50%}
+.fontes{margin-top:8px;padding-left:18px;color:#404040;font-size:.92rem}
+.fontes li{margin-bottom:6px}
+.light a{color:#15803d;font-weight:600}
+
+/* Faixa azul */
+.cta{background:var(--azul-anil);padding:48px 0}
+.cta .wrap{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.cta h2{font-size:clamp(1.5rem,3vw,2.1rem);max-width:18em}
+.cta p{color:#dbe4f7;margin-top:8px}
+
+.foot{padding:28px 0;color:var(--texto-fraco);font-size:.84rem}
+.foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width:960px){
+  .hero-grid,.metodo{grid-template-columns:1fr}
+  .macro{grid-template-columns:repeat(2,1fr)}
+  .nav{display:none}
+  .top .btn{margin-left:auto}
+}
+@media (max-width:420px){
+  .wrap{padding:0 16px}
+  .macro{grid-template-columns:1fr}
+  .numeros{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr}
+  .escala-rotulos{font-size:.68rem}
+  .logo b{font-size:.98rem}
+  .top .wrap{gap:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="../" aria-label="Estratégia Bitcoin, início do site"><img src="data:image/png;base64,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" alt="" width="38" height="28"><b>Estratégia Bitcoin</b></a>
+    <nav class="nav" aria-label="Seções">
+      <a href="../#biblioteca">Biblioteca</a><a href="#topo" aria-current="page">Termômetro</a><a href="#indicadores">Indicadores</a><a href="#historico">Histórico</a><a href="#macro">Macro</a><a href="#metodo">Como funciona</a>
+    </nav>
+    <a class="btn btn-green btn-sm" href="https://estrategiabitcoin.substack.com/subscribe" target="_blank" rel="noopener">Assinar grátis</a>
+  </div>
+</header>
+
+<div class="aviso" id="aviso" hidden>
+  <div class="wrap"><b>Protótipo</b><span id="aviso-txt"></span></div>
+</div>
+
+<main id="topo">
+<section class="hero" aria-labelledby="t-hero">
+  <div class="wrap">
+    <p class="rotulo">Termômetro do Bitcoin · on-chain e macro</p>
+    <h1 class="disp" id="t-hero">Em que fase do ciclo <span class="u">o Bitcoin está?</span></h1>
+    <div class="hero-grid">
+      <div class="leitura" aria-live="polite">
+        <div class="leitura-top">
+          <div>
+            <p class="rotulo">Nota consolidada</p>
+            <div class="score num" id="score">–</div>
+          </div>
+          <div style="text-align:right">
+            <div class="zona-nome"><span class="zona-dot" id="zona-dot"></span><span id="zona-nome">–</span></div>
+            <p class="leitura-sub" id="zona-sub"></p>
+          </div>
+        </div>
+        <div class="escala" aria-hidden="true">
+          <div class="escala-barra"><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="marcador" id="marcador"></div>
+          <div class="escala-rotulos"><span>Valor extremo</span><span>Valor</span><span>Neutro</span><span>Aquecido</span><span>Euforia</span></div>
+        </div>
+        <div class="contagem" id="contagem"></div>
+      </div>
+      <div class="numeros" id="numeros"></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="indicadores" aria-labelledby="t-ind">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <p class="rotulo">Detalhamento</p>
+        <h2 class="disp" id="t-ind">Indicador por indicador</h2>
+        <p>Cada indicador vira uma nota de -2 a +2 pela régua abaixo dele. Desligue os que você não quer usar: a nota do topo e o histórico recalculam na hora.</p>
+      </div>
+      <div class="acoes">
+        <button class="btn-ghost" type="button" id="todos">Usar todos</button>
+        <button class="btn-ghost" type="button" id="so-onchain">Só on-chain</button>
+      </div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+
+<section class="sec" id="historico" aria-labelledby="t-hist">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <p class="rotulo">Histórico semanal</p>
+        <h2 class="disp" id="t-hist">A nota ao longo dos ciclos</h2>
+        <p>O fundo do gráfico de preço mostra a zona de cada semana. Azul apareceu perto dos fundos de 2015, 2018, 2020 e 2022; vermelho, perto dos topos.</p>
+      </div>
+      <div class="acoes" role="group" aria-label="Período">
+        <button class="btn-ghost" type="button" data-per="0" aria-pressed="true">Tudo</button>
+        <button class="btn-ghost" type="button" data-per="4">4 anos</button>
+        <button class="btn-ghost" type="button" data-per="1">1 ano</button>
+      </div>
+    </div>
+    <div class="grafico-box">
+      <div class="grafico-head">
+        <h3>Preço do Bitcoin (US$, escala log) e zona da semana</h3>
+        <div class="legenda" id="leg-zonas"></div>
+      </div>
+      <div class="grafico" id="g-preco"></div>
+      <div class="grafico-head" style="padding-top:18px">
+        <h3>Nota consolidada (-2 a +2)</h3>
+      </div>
+      <div class="grafico" id="g-score"></div>
+      <details>
+        <summary>Ver as últimas 12 semanas em tabela</summary>
+        <div class="tabela-wrap"><table id="tabela"></table></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="macro" aria-labelledby="t-macro">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <p class="rotulo">Contexto macro</p>
+        <h2 class="disp" id="t-macro">Juros, inflação e dólar</h2>
+        <p>Não entram na nota. Ficam aqui porque o preço do Bitcoin em reais e o apetite por risco dependem deles.</p>
+      </div>
+    </div>
+    <div class="macro" id="macro-cards"></div>
+  </div>
+</section>
+
+<section class="sec light" id="metodo" aria-labelledby="t-met">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <p class="rotulo">Como funciona</p>
+        <h2 class="disp" id="t-met">De onde vem a nota</h2>
+      </div>
+    </div>
+    <div class="metodo">
+      <div>
+        <h3>A conta</h3>
+        <p>Cada indicador recebe uma nota de -2 a +2 conforme a faixa em que está. A nota consolidada é a média simples das notas dos indicadores ligados.</p>
+        <table aria-label="Zonas da nota consolidada">
+          <thead><tr><th>Nota média</th><th>Zona</th></tr></thead>
+          <tbody id="t-zonas"></tbody>
+        </table>
+        <p style="margin-top:18px">É um termômetro de ciclo, não um sinal de compra ou venda. Ele mostra se o preço está esticado ou descontado em relação à história do próprio Bitcoin.</p>
+      </div>
+      <div>
+        <h3>As réguas</h3>
+        <table aria-label="Faixas de cada indicador">
+          <thead><tr><th>Indicador</th><th>+2</th><th>+1</th><th>0</th><th>-1</th><th>-2</th></tr></thead>
+          <tbody id="t-reguas"></tbody>
+        </table>
+        <h3 style="margin-top:28px">Fontes</h3>
+        <ul class="fontes">
+          <li><a href="https://coinmetrics.io/community-network-data/" target="_blank" rel="noopener">Coin Metrics Community</a>: preço, MVRV, valor de mercado, oferta e hashrate.</li>
+          <li><a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">alternative.me</a>: Fear &amp; Greed.</li>
+          <li><a href="https://dadosabertos.bcb.gov.br/" target="_blank" rel="noopener">Banco Central (SGS)</a> e <a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED</a>: juros, inflação e dólar.</li>
+          <li>Médias móveis, RSI e Hash Ribbons são calculados a partir desses dados.</li>
+        </ul>
+        <p style="margin-top:12px" id="atualizado"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" aria-labelledby="t-cta">
+  <div class="wrap">
+    <div>
+      <h2 class="disp" id="t-cta">A leitura do termômetro, toda semana, no seu e-mail.</h2>
+      <p>A newsletter explica o que mudou e o que os livros da Biblioteca dizem sobre isso.</p>
+    </div>
+    <a class="btn btn-green" href="https://estrategiabitcoin.substack.com/subscribe" target="_blank" rel="noopener">Assinar grátis</a>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>© 2026 Estratégia Bitcoin. Conteúdo educacional; não é recomendação de investimento.</span>
+    <span>Dados públicos, atualizados uma vez por dia.</span>
+  </div>
+</footer>
+
+<script type="application/json" id="dados-embutidos"></script>
+<script>
+(function(){
+"use strict";
+var ZONAS = [
+  {n:2,  nome:"Valor extremo", cor:"var(--z2)",  hex:"#3d74e0", min:1.5,  txt:"Preço muito descontado frente à história"},
+  {n:1,  nome:"Valor",         cor:"var(--z1)",  hex:"#8fb0ee", min:0.5,  txt:"Preço abaixo da média histórica"},
+  {n:0,  nome:"Neutro",        cor:"var(--z0)",  hex:"#7a7a7a", min:-0.5, txt:"Sem sinal forte para nenhum lado"},
+  {n:-1, nome:"Aquecido",      cor:"var(--zm1)", hex:"#f2c94c", min:-1.5, txt:"Preço esticado, euforia crescendo"},
+  {n:-2, nome:"Euforia",       cor:"var(--zm2)", hex:"#e5534b", min:-Infinity, txt:"Faixa típica de topos de ciclo"}
+];
+var NOTA_ROT = {"2":"+2 Valor extremo","1":"+1 Valor","0":"0 Neutro","-1":"-1 Aquecido","-2":"-2 Euforia"};
+function zonaDe(s){ for (var i=0;i<ZONAS.length;i++) if (s>=ZONAS[i].min) return ZONAS[i]; return ZONAS[4]; }
+function zonaNota(n){ return ZONAS.filter(function(z){return z.n===n;})[0]; }
+
+var fmtN = function(v,d){ return v.toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d}); };
+var fmtUSD = function(v){ return "US$ " + Math.round(v).toLocaleString("pt-BR"); };
+var fmtData = function(iso){ var p=iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; };
+var MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+var fmtMes = function(iso){ var p=iso.split("-"); return MESES[+p[1]-1]+"/"+p[0].slice(2); };
+function fmtVal(ind){
+  if (ind.valor==null) return "–";
+  if (ind.fmt==="x") return fmtN(ind.valor,2)+"x";
+  if (ind.fmt==="z") return fmtN(ind.valor,2);
+  return fmtN(ind.valor,0);
+}
+function fmtCorte(ind,c){ return ind.fmt==="x" ? fmtN(c, c%1? (String(c).split(".")[1].length) : 1)+"x" : fmtN(c, c%1?1:0); }
+function sinal(s){ return (s>0.0049?"+":"") + fmtN(s,2); }
+
+function iniciar(D){
+  var IND = D.indicadores.filter(function(i){ return i.valor!=null; });
+  var COLS = D.historico_cols;
+  var ativos = {};
+  var salvo = null;
+  try { salvo = JSON.parse(localStorage.getItem("eb-termometro-ativos")||"null"); } catch(e){}
+  IND.forEach(function(i){ ativos[i.id] = salvo && salvo.hasOwnProperty(i.id) ? !!salvo[i.id] : true; });
+
+  if (D.prototipo){
+    document.getElementById("aviso").hidden = false;
+    document.getElementById("aviso-txt").textContent = "Indicadores on-chain com dados reais da Coin Metrics até " + fmtData(D.data_ref) + ". Macro com valores de novembro/2026. A versão no ar atualiza tudo sozinha, uma vez por dia.";
+  }
+  document.getElementById("atualizado").textContent = "Dados on-chain de " + fmtData(D.data_ref) + ".";
+
+  /* Números de referência */
+  var nums = [
+    {r:"Preço", v:fmtUSD(D.preco), d:"em " + fmtData(D.data_ref)},
+    {r:"12 meses", v:(D.var_365d>0?"+":"")+fmtN(D.var_365d*100,1)+"%", d:"variação do preço", cls:D.var_365d<0?"neg":"pos"},
+    {r:"Preço realizado", v:fmtUSD(D.preco_realizado), d:"custo médio de todas as moedas"},
+    {r:"Média 200 semanas", v:fmtUSD(D.mm200s_valor), d:"o “piso” histórico dos ciclos"}
+  ];
+  document.getElementById("numeros").innerHTML = nums.map(function(n){
+    return '<div class="numero"><p class="rotulo">'+n.r+'</p><div class="v num '+(n.cls||"")+'">'+n.v+'</div><p class="d">'+n.d+'</p></div>';
+  }).join("");
+
+  /* Legendas e tabelas fixas */
+  document.getElementById("leg-zonas").innerHTML = ZONAS.slice().reverse().map(function(z){
+    return '<span><i style="background:'+z.cor+'"></i>'+z.nome+'</span>'; }).join("");
+  document.getElementById("t-zonas").innerHTML = [
+    ["+1,5 ou mais",ZONAS[0]],["+0,5 a +1,5",ZONAS[1]],["-0,5 a +0,5",ZONAS[2]],["-1,5 a -0,5",ZONAS[3]],["abaixo de -1,5",ZONAS[4]]
+  ].map(function(r){ return '<tr><td class="num">'+r[0]+'</td><td><span class="zchip"><i style="background:'+r[1].hex+'"></i>'+r[1].nome+'</span></td></tr>'; }).join("");
+  document.getElementById("t-reguas").innerHTML = D.indicadores.map(function(i){
+    if (!i.cortes) return '<tr><td>'+i.curto+'</td><td colspan="5" style="text-align:left">abaixo de 1,0x = +1 (capitulação); acima = 0</td></tr>';
+    var c=i.cortes, f=function(x){return fmtCorte(i,x);};
+    return '<tr><td>'+i.curto+'</td><td>&lt; '+f(c[0])+'</td><td>'+f(c[0])+'–'+f(c[1])+'</td><td>'+f(c[1])+'–'+f(c[2])+'</td><td>'+f(c[2])+'–'+f(c[3])+'</td><td>&gt; '+f(c[3])+'</td></tr>';
+  }).join("");
+
+  /* Cartões */
+  var cardsEl = document.getElementById("cards");
+  cardsEl.innerHTML = IND.map(function(i){
+    var z = zonaNota(i.nota);
+    var regua = "";
+    if (i.cortes){
+      var c=i.cortes, lo=c[0]-(c[1]-c[0]), hi=c[3]+(c[3]-c[2]);
+      var pos = function(v){ // posição linear por segmento: 5 segmentos iguais
+        var pts=[lo].concat(c).concat([hi]);
+        if (v<=lo) return 0; if (v>=hi) return 100;
+        for (var k=0;k<5;k++) if (v<=pts[k+1]) return (k+(v-pts[k])/(pts[k+1]-pts[k]))*20;
+        return 100;
+      };
+      regua = '<div class="regua" aria-hidden="true"><div class="regua-barra">'+
+        ["--z2","--z1","--z0","--zm1","--zm2"].map(function(v){return '<span style="background:var('+v+')"></span>';}).join("")+
+        '</div><div class="regua-pino" style="left:'+pos(i.valor).toFixed(1)+'%"></div><div class="regua-cortes">'+
+        c.map(function(x,k){return '<span style="left:'+((k+1)*20)+'%">'+fmtCorte(i,x)+'</span>';}).join("")+'</div></div>';
+    }
+    return '<article class="card" data-id="'+i.id+'" style="border-left-color:'+z.hex+'">'+
+      '<div class="card-top"><div><h3>'+i.nome+'</h3></div><span class="chip" style="background:'+z.hex+'">'+NOTA_ROT[String(i.nota)]+'</span></div>'+
+      '<div class="val num">'+fmtVal(i)+'</div>'+ regua +
+      '<p>'+i.explica+'</p>'+
+      '<label class="toggle"><input type="checkbox" id="t-'+i.id+'" data-id="'+i.id+'"'+(ativos[i.id]?" checked":"")+'><span class="sw"></span>Usar no cálculo</label>'+
+      '</article>';
+  }).join("");
+  cardsEl.addEventListener("change", function(e){
+    if (!e.target.matches("input[data-id]")) return;
+    ativos[e.target.dataset.id] = e.target.checked; atualizar();
+  });
+  function marcar(fn){ IND.forEach(function(i){ ativos[i.id]=fn(i); var el=document.getElementById("t-"+i.id); if(el) el.checked=ativos[i.id]; }); atualizar(); }
+  document.getElementById("todos").onclick = function(){ marcar(function(){return true;}); };
+  document.getElementById("so-onchain").onclick = function(){ marcar(function(i){ return ["mvrv","mvrvz","hash"].indexOf(i.id)>-1; }); };
+
+  /* Histórico: nota de cada semana com os indicadores ligados */
+  var idxCol = {}; COLS.forEach(function(c,k){ idxCol[c]=k; });
+  function notaLinha(r){
+    var s=0,n=0;
+    IND.forEach(function(i){ if (!ativos[i.id]) return; var v=r[idxCol[i.id]]; if (v!=null){ s+=v; n++; } });
+    return n? s/n : null;
+  }
+  var periodo = 0;
+  document.querySelectorAll("[data-per]").forEach(function(b){
+    b.onclick = function(){
+      periodo = +b.dataset.per;
+      document.querySelectorAll("[data-per]").forEach(function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); });
+      desenhar();
+    };
+  });
+
+  var NS="http://www.w3.org/2000/svg";
+  function el(tag, at, pai){ var e=document.createElementNS(NS,tag); for (var k in at) e.setAttribute(k,at[k]); if (pai) pai.appendChild(e); return e; }
+
+  var serie = [];
+  function desenhar(){
+    var H = D.historico;
+    if (periodo){ var corte = new Date(D.data_ref); corte.setFullYear(corte.getFullYear()-periodo); var ci=corte.toISOString().slice(0,10); H = H.filter(function(r){return r[0]>=ci;}); }
+    serie = H.map(function(r){ return {d:r[0], p:r[1], s:notaLinha(r)}; });
+    var box = document.getElementById("g-preco");
+    var W = Math.max(320, box.clientWidth), ml=58, mr=14;
+    var iw = W-ml-mr, n = serie.length;
+    var x = function(k){ return ml + (n<2?0:k*iw/(n-1)); };
+    var bw = n>1 ? iw/(n-1) : iw;
+
+    /* Preço */
+    var H1=300, mt=10, mb=26, ih=H1-mt-mb;
+    var pmin=Infinity,pmax=0; serie.forEach(function(o){ pmin=Math.min(pmin,o.p); pmax=Math.max(pmax,o.p); });
+    var lmin=Math.floor(Math.log10(pmin)), lmax=Math.ceil(Math.log10(pmax));
+    var lo=Math.log10(pmin)-0.05, hi=Math.log10(pmax)+0.05;
+    var y = function(p){ return mt + ih*(1-(Math.log10(p)-lo)/(hi-lo)); };
+    var svg = el("svg",{viewBox:"0 0 "+W+" "+H1, role:"img", "aria-label":"Preço semanal do Bitcoin com a zona da nota consolidada ao fundo"});
+    var bg = el("g",{},svg);
+    serie.forEach(function(o,k){
+      if (o.s==null) return;
+      el("rect",{x:(x(k)-bw/2).toFixed(1), y:mt, width:(bw+0.6).toFixed(1), height:ih, fill:zonaDe(o.s).hex, "fill-opacity":(zonaDe(o.s).n===0?"0.10":"0.32")}, bg);
+    });
+    var grid = el("g",{},svg);
+    for (var e=lmin;e<=lmax;e++){ [1,2,5].forEach(function(m){
+      var v=m*Math.pow(10,e); if (v<pmin*0.85||v>pmax*1.15) return;
+      var yy=y(v); el("line",{x1:ml,x2:W-mr,y1:yy,y2:yy,stroke:"#ffffff","stroke-opacity":m===1?"0.12":"0.05"},grid);
+      var t=el("text",{x:ml-8,y:yy+4,"text-anchor":"end"},grid); t.textContent = v>=1000? (v/1000).toLocaleString("pt-BR")+" mil" : v.toLocaleString("pt-BR");
+    }); }
+    eixoX(svg, serie, x, H1-6);
+    var d = serie.map(function(o,k){ return (k?"L":"M")+x(k).toFixed(1)+","+y(o.p).toFixed(1); }).join("");
+    el("path",{d:d,fill:"none",stroke:"#ffffff","stroke-width":"2","stroke-linejoin":"round"},svg);
+    var ult = serie[n-1];
+    el("circle",{cx:x(n-1),cy:y(ult.p),r:5,fill:"#fff",stroke:"var(--superficie)","stroke-width":2},svg);
+    montar(box, svg, x, function(k){ return y(serie[k].p); }, H1, mt, ih, ml, W, mr);
+
+    /* Nota */
+    var box2 = document.getElementById("g-score");
+    var H2=170, mt2=10, mb2=26, ih2=H2-mt2-mb2;
+    var y2 = function(s){ return mt2 + ih2*(1-(s+2)/4); };
+    var svg2 = el("svg",{viewBox:"0 0 "+W+" "+H2, role:"img", "aria-label":"Nota consolidada semanal de -2 a +2"});
+    var faixas=[[2,1.5,ZONAS[0]],[1.5,0.5,ZONAS[1]],[0.5,-0.5,ZONAS[2]],[-0.5,-1.5,ZONAS[3]],[-1.5,-2,ZONAS[4]]];
+    faixas.forEach(function(f){ el("rect",{x:ml,y:y2(f[0]),width:iw,height:y2(f[1])-y2(f[0]),fill:f[2].hex,"fill-opacity":"0.12"},svg2); });
+    [-2,-1,0,1,2].forEach(function(v){
+      var yy=y2(v); el("line",{x1:ml,x2:W-mr,y1:yy,y2:yy,stroke:"#fff","stroke-opacity":v===0?"0.25":"0.07"},svg2);
+      var t=el("text",{x:ml-8,y:yy+4,"text-anchor":"end"},svg2); t.textContent=(v>0?"+":"")+v;
+    });
+    eixoX(svg2, serie, x, H2-6);
+    var d2="", pen=false;
+    serie.forEach(function(o,k){ if (o.s==null){pen=false;return;} d2+=(pen?"L":"M")+x(k).toFixed(1)+","+y2(o.s).toFixed(1); pen=true; });
+    el("path",{d:d2+"L"+x(n-1).toFixed(1)+","+y2(-2)+"L"+x(0).toFixed(1)+","+y2(-2)+"Z",fill:"#ffffff","fill-opacity":"0.04"},svg2);
+    el("path",{d:d2,fill:"none",stroke:"#ffffff","stroke-width":"2","stroke-linejoin":"round"},svg2);
+    if (ult.s!=null) el("circle",{cx:x(n-1),cy:y2(ult.s),r:5,fill:zonaDe(ult.s).hex,stroke:"var(--superficie)","stroke-width":2},svg2);
+    montar(box2, svg2, x, function(k){ return serie[k].s==null?null:y2(serie[k].s); }, H2, mt2, ih2, ml, W, mr);
+
+    /* Tabela */
+    var linhas = D.historico.slice(-12).reverse();
+    document.getElementById("tabela").innerHTML = '<thead><tr><th>Semana</th><th>Preço</th><th>Nota</th><th>Zona</th></tr></thead><tbody>'+
+      linhas.map(function(r){ var s=notaLinha(r); return '<tr><td>'+fmtData(r[0])+'</td><td class="num">'+fmtUSD(r[1])+'</td><td class="num">'+(s==null?"–":sinal(s))+'</td><td>'+(s==null?"–":zonaDe(s).nome)+'</td></tr>'; }).join("")+'</tbody>';
+  }
+  function eixoX(svg, serie, x, yb){
+    var n=serie.length, anos=n>200, vistos={};
+    serie.forEach(function(o,k){
+      var chave = anos ? o.d.slice(0,4) : o.d.slice(0,7);
+      if (vistos[chave]) return; vistos[chave]=1;
+      if (anos && +chave%2) return;
+      if (!anos && (+o.d.slice(5,7)-1)%(n>60?6:3)) return;
+      var t=el("text",{x:x(k),y:yb,"text-anchor":"middle"},svg); t.textContent = anos? chave : fmtMes(o.d);
+    });
+  }
+  /* Cursor e dica sincronizados entre os dois gráficos */
+  var alvos=[];
+  function montar(box, svg, x, yf, Ht, mt, ih, ml, W, mr){
+    box.innerHTML=""; box.appendChild(svg);
+    var linha=el("line",{y1:mt,y2:mt+ih,stroke:"#fff","stroke-opacity":"0.5","stroke-dasharray":"3 3",visibility:"hidden"},svg);
+    var pto=el("circle",{r:5,fill:"#fff",stroke:"#171717","stroke-width":2,visibility:"hidden"},svg);
+    var tip=document.createElement("div"); tip.className="tip"; box.appendChild(tip);
+    var hit=el("rect",{x:ml,y:0,width:W-ml-mr,height:Ht,fill:"transparent"},svg);
+    var alvo={box:box,svg:svg,linha:linha,pto:pto,tip:tip,x:x,yf:yf,W:W};
+    alvos = alvos.filter(function(a){ return a.box!==box; }); alvos.push(alvo);
+    function mover(ev){
+      var r=svg.getBoundingClientRect(), px=(ev.clientX-r.left)*W/r.width;
+      var n=serie.length, k=Math.round((px-ml)/((W-ml-mr)/(n-1||1))); k=Math.max(0,Math.min(n-1,k));
+      alvos.forEach(function(a){ mostrar(a,k); });
+    }
+    function sair(){ alvos.forEach(function(a){ a.linha.setAttribute("visibility","hidden"); a.pto.setAttribute("visibility","hidden"); a.tip.style.opacity=0; }); }
+    hit.addEventListener("pointermove",mover); hit.addEventListener("pointerdown",mover); hit.addEventListener("pointerleave",sair);
+  }
+  function mostrar(a,k){
+    var o=serie[k], xx=a.x(k), yy=a.yf(k);
+    a.linha.setAttribute("x1",xx); a.linha.setAttribute("x2",xx); a.linha.setAttribute("visibility","visible");
+    if (yy!=null){ a.pto.setAttribute("cx",xx); a.pto.setAttribute("cy",yy); a.pto.setAttribute("visibility","visible"); } else a.pto.setAttribute("visibility","hidden");
+    if (a!==alvos[0]) { a.tip.style.opacity=0; return; }
+    var z = o.s==null?null:zonaDe(o.s);
+    a.tip.innerHTML='<b>Semana de '+fmtData(o.d)+'</b><div class="l"><span>Preço</span><span class="num">'+fmtUSD(o.p)+'</span></div>'+
+      '<div class="l"><span>Nota</span><span class="num">'+(o.s==null?"–":sinal(o.s))+'</span></div>'+
+      (z?'<div class="l"><span>Zona</span><span style="color:'+z.hex+';font-weight:600">'+z.nome+'</span></div>':"");
+    var r=a.svg.getBoundingClientRect(), sx=r.width/a.W, left=xx*sx+14;
+    if (left+190>r.width) left=xx*sx-190;
+    a.tip.style.left=left+"px"; a.tip.style.top="12px"; a.tip.style.opacity=1;
+  }
+
+  /* Macro */
+  var mc = D.macro_cards||[];
+  document.getElementById("macro").hidden = !mc.length;
+  document.getElementById("macro-cards").innerHTML = mc.map(function(m){
+    return '<article class="mcard"><p class="rotulo">'+m.nome+'</p><div class="v num">'+m.valor+'</div><div class="un">'+m.unidade+'</div><p>'+m.leitura+'</p><div class="fonte">'+m.fonte+' · '+m.data+'</div></article>';
+  }).join("");
+
+  /* Topo */
+  function atualizar(){
+    try { localStorage.setItem("eb-termometro-ativos", JSON.stringify(ativos)); } catch(e){}
+    var usados = IND.filter(function(i){ return ativos[i.id]; });
+    document.querySelectorAll(".card").forEach(function(c){ c.classList.toggle("off", !ativos[c.dataset.id]); });
+    var sc = document.getElementById("score"), zn=document.getElementById("zona-nome"), zs=document.getElementById("zona-sub"), mk=document.getElementById("marcador");
+    if (!usados.length){
+      sc.textContent="–"; zn.textContent="Nenhum indicador"; zs.textContent="Ligue pelo menos um indicador abaixo.";
+      document.getElementById("zona-dot").style.background="transparent"; mk.style.display="none";
+      document.getElementById("contagem").innerHTML=""; desenhar(); return;
+    }
+    mk.style.display="";
+    var s = usados.reduce(function(a,i){return a+i.nota;},0)/usados.length;
+    var z = zonaDe(s);
+    sc.textContent = sinal(s);
+    zn.textContent = z.nome; document.getElementById("zona-dot").style.background=z.hex;
+    zs.textContent = z.txt + ". Média de " + usados.length + " de " + IND.length + " indicadores.";
+    mk.style.left = ((2-s)/4*100).toFixed(1)+"%";
+    document.getElementById("contagem").innerHTML = [2,1,0,-1,-2].map(function(n){
+      var q = usados.filter(function(i){return i.nota===n;}).length; if (!q) return "";
+      return '<span class="mini-chip"><i style="background:'+zonaNota(n).hex+'"></i>'+q+'× '+NOTA_ROT[String(n)]+'</span>';
+    }).join("");
+    desenhar();
+  }
+  var rt; window.addEventListener("resize", function(){ clearTimeout(rt); rt=setTimeout(desenhar,120); });
+  atualizar();
+}
+
+var bruto = document.getElementById("dados-embutidos").textContent.trim();
+if (bruto && bruto.charAt(0)==="{") iniciar(JSON.parse(bruto));
+else fetch("dados.json",{cache:"no-store"}).then(function(r){return r.json();}).then(iniciar).catch(function(){
+  document.getElementById("score").textContent="–";
+  document.getElementById("zona-nome").textContent="Dados indisponíveis";
+  document.getElementById("zona-sub").textContent="Não foi possível carregar dados.json. Tente recarregar a página.";
+});
+})();
+</script>
+</body>
+</html>
