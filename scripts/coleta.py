@@ -17,7 +17,7 @@ Fontes (todas gratuitas, sem chave):
 import argparse, csv, json, math, statistics, sys, urllib.request
 from datetime import date, datetime, timedelta, timezone
 
-UA = {"User-Agent": "termometro-estrategia-bitcoin/1.0"}
+UA = {"User-Agent": "Mozilla/5.0 (termometro-estrategia-bitcoin)", "Accept": "application/json, text/csv, */*"}
 
 def get(url, as_json=True):
     req = urllib.request.Request(url, headers=UA)
@@ -53,7 +53,10 @@ def fear_greed(path=None):
     return out
 
 def sgs(serie, n=24):
-    j = get(f"https://api.bcb.gov.br/dados/serie/bcdata.sgs.{serie}/dados/ultimos/{n}?formato=json")
+    """Janela por data (o BC limita consultas de séries diárias); n = meses para trás."""
+    hoje = date.today(); ini = date(hoje.year - (n // 12 + 1), hoje.month, 1)
+    j = get(f"https://api.bcb.gov.br/dados/serie/bcdata.sgs.{serie}/dados?formato=json"
+            f"&dataInicial={ini:%d/%m/%Y}&dataFinal={hoje:%d/%m/%Y}")
     return [{"d": datetime.strptime(x["data"], "%d/%m/%Y").date().isoformat(),
              "v": float(x["valor"])} for x in j]
 
@@ -66,9 +69,9 @@ def fred(serie, n=400):
 def macro_api():
     m = {}
     for chave, fn in {
-        "selic": lambda: sgs(432, 400),
+        "selic": lambda: sgs(432, 12),
         "ipca12": lambda: sgs(13522, 24),
-        "dolar": lambda: sgs(1, 260),
+        "dolar": lambda: sgs(1, 12),
         "fed": lambda: fred("DFF", 400),
         "us10y": lambda: fred("DGS10", 260),
     }.items():
@@ -76,7 +79,10 @@ def macro_api():
             m[chave] = fn()
         except Exception as e:  # uma fonte fora do ar não derruba a página
             print(f"aviso: {chave} falhou: {e}", file=sys.stderr)
+            AVISOS.append(f"{chave}: {e}")
     return m
+
+AVISOS = []
 
 # ---------------------------------------------------------------- cálculo
 def sma(vals, n):
@@ -257,12 +263,13 @@ if __name__ == "__main__":
     try:
         fng = fear_greed(a.fng) if (a.fng or not a.csv) else {}
     except Exception as e:
-        print(f"aviso: Fear & Greed falhou: {e}", file=sys.stderr); fng = {}
+        print(f"aviso: Fear & Greed falhou: {e}", file=sys.stderr); AVISOS.append(f"fng: {e}"); fng = {}
     if a.macro: macro = json.load(open(a.macro))
     elif not a.csv: macro = macro_api()
     else: macro = {}
     dados = calcular(cm, fng, {} if isinstance(macro, list) else macro)
     dados["macro_cards"] = macro if isinstance(macro, list) else cartoes_macro(macro)
+    dados["avisos"] = AVISOS
     with open(a.saida, "w") as f:
         json.dump(dados, f, ensure_ascii=False, separators=(",", ":"))
     print(f"ok: {dados['data_ref']} · preço {dados['preco']} · {len(dados['historico'])} semanas")
