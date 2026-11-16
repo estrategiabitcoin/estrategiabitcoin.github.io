@@ -1,11 +1,12 @@
-name: Atualizar termômetro
+name: Atualizar site
 on:
   schedule:
-    - cron: "17 10 * * *"   # todo dia, 7h17 em Brasília
+    - cron: "17 10 * * *"   # todo dia, 7h17 em Brasília: Termômetro + site
+    - cron: "47 */3 * * *"  # a cada 3 horas: textos do Substack e livros
   workflow_dispatch: {}      # botão "Run workflow" para atualizar na hora
   push:
     branches: [main]
-    paths: ["scripts/**", ".github/workflows/**"]   # roda quando o código muda
+    paths: ["dados/**", "scripts/**", ".github/workflows/**"]   # roda quando livros ou código mudam
 permissions:
   contents: write
 concurrency: atualizar
@@ -16,10 +17,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: python scripts/coleta.py --saida termometro/dados.json
-      - run: |
+      - name: Termômetro
+        if: github.event.schedule != '47 */3 * * *'
+        run: python scripts/coleta.py --saida termometro/dados.json
+      - name: Livros e textos do Substack
+        run: python scripts/montar_site.py
+      - name: Publicar
+        run: |
           git config user.name "termometro-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add termometro/dados.json
-          git diff --cached --quiet || git commit -m "Termômetro: dados de $(date -u +%F)"
+          git add termometro/dados.json index.html
+          git diff --cached --quiet || git commit -m "Site: atualização de $(date -u +%F)"
+          git pull --rebase --autostash
           git push
