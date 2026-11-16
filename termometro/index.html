@@ -121,13 +121,6 @@ img{max-width:100%;display:block}
 .regua-cortes{position:relative;height:16px;font-family:var(--mono);font-size:.66rem;color:var(--texto-fraco)}
 .regua-cortes span{position:absolute;transform:translateX(-50%);top:3px}
 .regua-pino{position:absolute;top:-1px;width:3px;height:16px;margin-left:-1.5px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px var(--superficie)}
-.toggle{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--texto-suave);cursor:pointer;user-select:none;margin-top:auto}
-.toggle input{position:absolute;opacity:0;width:1px;height:1px}
-.sw{width:36px;height:20px;border-radius:999px;background:#404040;position:relative;flex:none;transition:background .2s}
-.sw::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
-.toggle input:checked + .sw{background:var(--verde-botao)}
-.toggle input:checked + .sw::after{transform:translateX(16px)}
-.toggle input:focus-visible + .sw{outline:3px solid var(--amarelo-ouro);outline-offset:2px}
 .acoes{display:flex;gap:8px;flex-wrap:wrap}
 .btn-ghost{background:transparent;border:1px solid var(--linha);color:var(--texto-suave);font-family:var(--sans);font-weight:600;font-size:.84rem;padding:8px 12px;border-radius:8px;cursor:pointer}
 .btn-ghost:hover{color:#fff;border-color:#555}
@@ -254,11 +247,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
       <div>
         <p class="rotulo">Detalhamento</p>
         <h2 class="disp" id="t-ind">Indicador por indicador</h2>
-        <p>Cada indicador vira uma nota de -2 a +2 pela régua abaixo dele. Desligue os que você não quer usar: a nota do topo e o histórico recalculam na hora.</p>
-      </div>
-      <div class="acoes">
-        <button class="btn-ghost" type="button" id="todos">Usar todos</button>
-        <button class="btn-ghost" type="button" id="so-onchain">Só on-chain</button>
+        <p>Cada indicador vira uma nota de -2 a +2 pela régua abaixo dele. A nota do topo é a média de todos eles.</p>
       </div>
     </div>
     <div class="cards" id="cards"></div>
@@ -321,7 +310,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
     <div class="metodo">
       <div>
         <h3>A conta</h3>
-        <p>Cada indicador recebe uma nota de -2 a +2 conforme a faixa em que está. A nota consolidada é a média simples das notas dos indicadores ligados.</p>
+        <p>Cada indicador recebe uma nota de -2 a +2 conforme a faixa em que está. A nota consolidada é a média simples das notas de todos os indicadores.</p>
         <table aria-label="Zonas da nota consolidada">
           <thead><tr><th>Nota média</th><th>Zona</th></tr></thead>
           <tbody id="t-zonas"></tbody>
@@ -398,9 +387,8 @@ function iniciar(D){
   var IND = D.indicadores.filter(function(i){ return i.valor!=null; });
   var COLS = D.historico_cols;
   var ativos = {};
-  var salvo = null;
-  try { salvo = JSON.parse(localStorage.getItem("eb-termometro-ativos")||"null"); } catch(e){}
-  IND.forEach(function(i){ ativos[i.id] = salvo && salvo.hasOwnProperty(i.id) ? !!salvo[i.id] : true; });
+  try { localStorage.removeItem("eb-termometro-ativos"); } catch(e){}
+  IND.forEach(function(i){ ativos[i.id] = true; });
 
   if (D.prototipo){
     document.getElementById("aviso").hidden = false;
@@ -453,18 +441,10 @@ function iniciar(D){
       '<div class="card-top"><div><h3>'+i.nome+'</h3></div><span class="chip" style="background:'+z.hex+'">'+NOTA_ROT[String(i.nota)]+'</span></div>'+
       '<div class="val num">'+fmtVal(i)+'</div>'+ regua +
       '<p>'+i.explica+'</p>'+
-      '<label class="toggle"><input type="checkbox" id="t-'+i.id+'" data-id="'+i.id+'"'+(ativos[i.id]?" checked":"")+'><span class="sw"></span>Usar no cálculo</label>'+
       '</article>';
   }).join("");
-  cardsEl.addEventListener("change", function(e){
-    if (!e.target.matches("input[data-id]")) return;
-    ativos[e.target.dataset.id] = e.target.checked; atualizar();
-  });
-  function marcar(fn){ IND.forEach(function(i){ ativos[i.id]=fn(i); var el=document.getElementById("t-"+i.id); if(el) el.checked=ativos[i.id]; }); atualizar(); }
-  document.getElementById("todos").onclick = function(){ marcar(function(){return true;}); };
-  document.getElementById("so-onchain").onclick = function(){ marcar(function(i){ return ["mvrv","mvrvz","hash"].indexOf(i.id)>-1; }); };
 
-  /* Histórico: nota de cada semana com os indicadores ligados */
+  /* Histórico: nota de cada semana com todos os indicadores */
   var idxCol = {}; COLS.forEach(function(c,k){ idxCol[c]=k; });
   function notaLinha(r){
     var s=0,n=0;
@@ -594,12 +574,11 @@ function iniciar(D){
 
   /* Topo */
   function atualizar(){
-    try { localStorage.setItem("eb-termometro-ativos", JSON.stringify(ativos)); } catch(e){}
     var usados = IND.filter(function(i){ return ativos[i.id]; });
     document.querySelectorAll(".card").forEach(function(c){ c.classList.toggle("off", !ativos[c.dataset.id]); });
     var sc = document.getElementById("score"), zn=document.getElementById("zona-nome"), zs=document.getElementById("zona-sub"), mk=document.getElementById("marcador");
     if (!usados.length){
-      sc.textContent="–"; zn.textContent="Nenhum indicador"; zs.textContent="Ligue pelo menos um indicador abaixo.";
+      sc.textContent="–"; zn.textContent="Nenhum indicador"; zs.textContent="Sem dados dos indicadores no momento.";
       document.getElementById("zona-dot").style.background="transparent"; mk.style.display="none";
       document.getElementById("contagem").innerHTML=""; desenhar(); return;
     }
@@ -608,7 +587,7 @@ function iniciar(D){
     var z = zonaDe(s);
     sc.textContent = sinal(s);
     zn.textContent = z.nome; document.getElementById("zona-dot").style.background=z.hex;
-    zs.textContent = z.txt + ". Média de " + usados.length + " de " + IND.length + " indicadores.";
+    zs.textContent = z.txt + ". Média de " + usados.length + " indicadores.";
     mk.style.left = ((2-s)/4*100).toFixed(1)+"%";
     document.getElementById("contagem").innerHTML = [2,1,0,-1,-2].map(function(n){
       var q = usados.filter(function(i){return i.nota===n;}).length; if (!q) return "";
