@@ -26,7 +26,11 @@ INDEX = RAIZ / "index.html"
 LIVROS = RAIZ / "dados" / "livros.json"
 CONFIG_POSTS = RAIZ / "dados" / "posts.json"
 SUBSTACK = "https://estrategiabitcoin.substack.com"
-UA = {"User-Agent": "Mozilla/5.0 (site-estrategia-bitcoin)", "Accept": "*/*"}
+UA = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Accept": "application/rss+xml,application/xml;q=0.9,text/html;q=0.8,*/*;q=0.7",
+    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+}
 FUSO = ZoneInfo("America/Sao_Paulo")
 MESES = "JAN FEV MAR ABR MAI JUN JUL AGO SET OUT NOV DEZ".split()
 
