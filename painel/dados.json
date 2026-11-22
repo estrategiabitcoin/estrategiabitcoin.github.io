@@ -1,0 +1,214 @@
+{
+ "atualizado_em": "2026-11-22",
+ "semana": "2026-11-22",
+ "titulo": "O Bitcoin perdeu os US$ 56 mil. Onde fica o fundo?",
+ "resumo": "O Bitcoin caiu até perto de US$ 55,3 mil no sábado e voltou para a faixa de US$ 59 mil a 61 mil no domingo. A maioria dos sensores marca pressão; MVRV, Múltiplo de Mayer e o medo extremo estão em zonas que, no passado, apareceram perto de fundos.",
+ "post_url": null,
+ "familias": [
+  {
+   "id": "preco",
+   "nome": "Preço contra o próprio preço",
+   "cor": "amarelo",
+   "pergunta": "Onde o preço está em relação à própria história?"
+  },
+  {
+   "id": "custo",
+   "nome": "Preço contra o custo de quem guarda",
+   "cor": "verde",
+   "pergunta": "Quem está no lucro e quem está no prejuízo?"
+  },
+  {
+   "id": "fora",
+   "nome": "Preço contra o mundo de fora",
+   "cor": "azul",
+   "pergunta": "Quem está sob pressão e pode ser forçado a vender?"
+  }
+ ],
+ "indicadores": [
+  {
+   "familia": "preco",
+   "nome": "Preço (domingo)",
+   "leitura": "US$ 59 a 61 mil",
+   "sinal": "pressao",
+   "nota": "mínima de US$ 55,3 mil em 21/11",
+   "data": "2026-11-22",
+   "fonte": "CoinGecko via Bitcoin.com News",
+   "explica": "Preço do Bitcoin em dólar no domingo da leitura."
+  },
+  {
+   "familia": "preco",
+   "nome": "Distância da média de 200 semanas",
+   "leitura": "-12%",
+   "sinal": "pressao",
+   "nota": "média perto de US$ 68 mil, rompida em 16/11",
+   "data": "2026-11-22",
+   "fonte": "Coin Metrics (Termômetro EB); Trefis",
+   "explica": "Média dos últimos 200 fechamentos semanais, quase quatro anos de preço. Não é piso: é memória de onde o preço esteve."
+  },
+  {
+   "familia": "preco",
+   "nome": "Múltiplo de Mayer",
+   "leitura": "0,81",
+   "sinal": "alivio",
+   "nota": "abaixo de 1,0: preço sob a média de 200 dias",
+   "data": "2026-11-20",
+   "fonte": "Coin Metrics (Termômetro EB)",
+   "explica": "Preço dividido pela média de 200 dias. Leituras abaixo de 0,8 foram raras e apareceram em mercados de baixa."
+  },
+  {
+   "familia": "preco",
+   "nome": "Dias desde o topo",
+   "leitura": "412 dias",
+   "sinal": "neutro",
+   "nota": "topo acima de US$ 126 mil em 06/10/2025",
+   "data": "2026-11-22",
+   "fonte": "conta da casa",
+   "explica": "Mercados de baixa anteriores duraram cerca de um ano. O relógio de quatro anos é comportamento humano em volta do halving, não lei do protocolo."
+  },
+  {
+   "familia": "custo",
+   "nome": "MVRV",
+   "leitura": "1,10",
+   "sinal": "alivio",
+   "nota": "detentor médio perto do empate",
+   "data": "2026-11-20",
+   "fonte": "Coin Metrics (Termômetro EB); CryptoQuant indicava perto de 1,1 em 17/11",
+   "explica": "Valor de mercado dividido pelo valor realizado (custo médio de todas as moedas). Abaixo de 1, o detentor médio está no prejuízo."
+  },
+  {
+   "familia": "custo",
+   "nome": "Preço realizado",
+   "leitura": "US$ 53,3 mil",
+   "sinal": "neutro",
+   "nota": "régua Coin Metrics; a Glassnode indicava perto de US$ 61 mil em 20/11",
+   "data": "2026-11-20",
+   "fonte": "Coin Metrics (Termômetro EB); Glassnode",
+   "explica": "Custo médio de todas as moedas, cada uma pelo preço do último movimento. Cada provedor calcula com escolhas próprias, por isso os valores diferem."
+  },
+  {
+   "familia": "custo",
+   "nome": "Custo dos holders de curto prazo",
+   "leitura": "US$ 74,8 mil",
+   "sinal": "pressao",
+   "nota": "quem comprou nos últimos meses está no prejuízo",
+   "data": "2026-11-15",
+   "fonte": "BGeometrics (sth-realized-price)",
+   "explica": "Custo médio das moedas que se moveram nos últimos 155 dias. Preço abaixo dele costuma pressionar a venda de quem comprou recentemente."
+  },
+  {
+   "familia": "fora",
+   "nome": "Custo de mineração",
+   "leitura": "US$ 62,9 mil",
+   "sinal": "pressao",
+   "nota": "minerador médio produz no prejuízo",
+   "data": "2026-11-10",
+   "fonte": "CryptoQuant, a partir do balanço da MARA (3º tri de 2026)",
+   "explica": "Custo estimado para produzir um bitcoin. Não é piso: o ajuste de dificuldade faz o custo seguir o preço."
+  },
+  {
+   "familia": "fora",
+   "nome": "Hashprice",
+   "leitura": "US$ 30,45 por PH/s/dia",
+   "sinal": "pressao",
+   "nota": "10% abaixo da média de 30 dias",
+   "data": "2026-11-16",
+   "fonte": "Hashrate Index (Luxor)",
+   "explica": "Receita esperada por unidade de poder de processamento. Mostra o aperto na margem dos mineradores."
+  },
+  {
+   "familia": "fora",
+   "nome": "ETFs à vista nos EUA",
+   "leitura": "-US$ 2,6 bi",
+   "sinal": "pressao",
+   "nota": "saídas líquidas de 2 a 17/11",
+   "data": "2026-11-17",
+   "fonte": "Trefis",
+   "explica": "Soma das entradas e saídas dos fundos de Bitcoin à vista negociados nos Estados Unidos."
+  },
+  {
+   "familia": "fora",
+   "nome": "Medo e ganância",
+   "leitura": "6",
+   "sinal": "alivio",
+   "nota": "medo extremo, leitura contrária",
+   "data": "2026-11-21",
+   "fonte": "alternative.me",
+   "explica": "Índice de 0 a 100 do sentimento do mercado. Extremos de medo apareceram perto de fundos, mas podem durar."
+  },
+  {
+   "familia": "fora",
+   "nome": "Funding dos perpétuos",
+   "leitura": "sem leitura",
+   "sinal": "sem",
+   "nota": "entra no próximo painel",
+   "data": "2026-11-22",
+   "fonte": "BGeometrics; CoinGlass",
+   "explica": "Taxa paga entre comprados e vendidos nos contratos perpétuos. Negativa indica excesso de apostas na queda."
+  }
+ ],
+ "escada": {
+  "titulo": "O preço furou todos os \"pisos\"",
+  "subtitulo": "Níveis de referência do mercado e o preço do fim de semana.",
+  "min": 52,
+  "max": 80,
+  "passo": 4,
+  "faixa": {
+   "de": 59,
+   "ate": 61,
+   "rotulo": "Domingo, 22/11: US$ 59 mil a 61 mil"
+  },
+  "niveis": [
+   {
+    "valor": 74.8,
+    "rotulo": "Custo dos holders de curto prazo",
+    "nota": "15/11",
+    "cor": "verde"
+   },
+   {
+    "valor": 68.0,
+    "rotulo": "Média de 200 semanas",
+    "nota": "rompida em 16/11",
+    "cor": "amarelo"
+   },
+   {
+    "valor": 62.9,
+    "rotulo": "Custo médio de mineração",
+    "nota": "3º tri",
+    "cor": "azul"
+   },
+   {
+    "valor": 55.3,
+    "rotulo": "Mínima de sábado",
+    "nota": "21/11",
+    "cor": "vermelho"
+   }
+  ],
+  "fontes": "Valores aproximados, 15 a 22/11/2026. Fontes: Trefis, CryptoQuant, BGeometrics, Coin Metrics, Bitcoin.com News."
+ },
+ "alertas": [
+  {
+   "data": "2026-11-21",
+   "alerta": "Mínima do ciclo e medo extremo",
+   "texto": "Preço abaixo de US$ 56 mil, menor nível desde setembro de 2024, com o índice de medo e ganância em 6.",
+   "post_url": null
+  },
+  {
+   "data": "2026-11-16",
+   "alerta": "Média de 200 semanas",
+   "texto": "O preço passou para baixo da média de 200 semanas, perto de US$ 68 mil.",
+   "post_url": null
+  }
+ ],
+ "historico": [
+  {
+   "data": "2026-11-22",
+   "preco": 60000,
+   "dist_mm200s": -12,
+   "mvrv": 1.1,
+   "sth": 74780,
+   "medo": 6,
+   "etf_7d": "saída",
+   "placar": "6 / 2 / 3"
+  }
+ ]
+}
