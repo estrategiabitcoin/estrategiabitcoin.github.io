@@ -8,6 +8,10 @@ Endereço: https://estrategiabitcoin.github.io
 - `termometro/`: Termômetro do Bitcoin. A página lê `termometro/dados.json`.
 - `painel/`: Painel on-chain e Indicador Richter. A página lê `painel/series.json` (gráficos, gerado pelo robô todo dia) e `painel/dados.json` (painel da semana e alertas, gravado pelas tarefas do Claude aos domingos e quando há alerta).
 - `scripts/painel_series.py`: monta as séries dos gráficos (Coin Metrics e BGeometrics) e o Indicador Richter (preço spot × preço realizado).
+- `indicadores/`: página única (piloto) com Termômetro, Indicador Richter e Painel on-chain. Lê os JSON de `termometro/` e `painel/`.
+- `etfs/`: fluxo diário dos ETFs de Bitcoin à vista dos EUA e custo médio estimado. Lê `ferramentas/etf.json`.
+- `dca/`: calculadora DCA com multiplicadores pelas faixas do MVRV (Indicador Richter). Lê `painel/series.json` e `ferramentas/dolar.json`.
+- `scripts/ferramentas.py`: grava `ferramentas/etf.json` (BGeometrics + Coin Metrics) e `ferramentas/dolar.json` (Banco Central, SGS 3698).
 - `scripts/montar_site.py`: monta o acervo, as capas e a lista de textos a partir do feed do Substack.
 - `scripts/coleta.py`: busca os dados públicos do Termômetro (Coin Metrics, alternative.me, Banco Central, FRED).
 - `.github/workflows/atualizar.yml`: roda tudo sozinho. Textos do Substack a cada 3 horas; Termômetro todo dia às 7h17 (Brasília). Para atualizar na hora: aba **Actions** → *Atualizar site* → **Run workflow**.

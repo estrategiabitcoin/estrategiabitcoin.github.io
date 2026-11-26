@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ETFs de Bitcoin · Estratégia Bitcoin</title>
+<meta name="description" content="Entradas e saídas diárias dos ETFs de Bitcoin à vista dos EUA, em BTC e em dólares, com o custo médio estimado de quem entrou pelos ETFs.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#171717">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Inter+Tight:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  /* Brand kit Estratégia Bitcoin, mundo escuro do Substack. */
+  --fundo:#171717;--superficie:#1f1f1f;--superficie-2:#262626;
+  --texto:#ffffff;--texto-suave:#a3a3a3;--texto-fraco:#737373;--linha:#333333;
+  --verde-botao:#15803d;--amarelo-ouro:#fddd10;--azul-anil:#21428b;
+  /* Zonas de ciclo (Termômetro e Indicador Richter): frio = valor, quente = euforia */
+  --z2:#3d74e0;--z1:#8fb0ee;--z0:#7a7a7a;--zm1:#f2c94c;--zm2:#e5534b;
+  --display:"Inter Tight","SF Pro Display",system-ui,-apple-system,sans-serif;
+  --sans:Inter,"SF Pro Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --wrap:1180px;color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--fundo);color:var(--texto);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2,h3,h4,p{margin:0}
+img{max-width:100%;display:block}
+:focus-visible{outline:3px solid var(--amarelo-ouro);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+.disp{font-family:var(--display);font-weight:800;letter-spacing:-.02em;line-height:1.04;text-wrap:balance}
+.rotulo{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--texto-suave)}
+.num{font-variant-numeric:tabular-nums}
+.u{text-decoration:underline;text-decoration-color:var(--amarelo-ouro);text-decoration-thickness:.09em;text-underline-offset:.14em;text-decoration-skip-ink:none}
+.neg{color:#f19a94}.pos{color:#86d39b}
+
+/* Botões */
+.btn{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:46px;padding:0 20px;font-family:var(--sans);font-weight:700;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;border-radius:8px;border:1.5px solid transparent;cursor:pointer}
+.btn-green{background:var(--verde-botao);color:#fff}
+.btn-green:hover{background:#166534}
+.btn-line{border-color:var(--linha);color:#fff;background:transparent}
+.btn-line:hover{border-color:#555}
+.btn-sm{min-height:40px;padding:0 14px;font-size:.76rem}
+
+/* Cabeçalho */
+.top{position:sticky;top:0;z-index:30;background:rgba(23,23,23,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
+.top .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo img{width:38px;height:auto;border-radius:2px}
+.logo b{font-family:var(--display);font-weight:800;font-size:1.1rem;letter-spacing:-.01em;white-space:nowrap}
+.nav{display:flex;gap:22px;margin-left:auto}
+.nav a{font-weight:600;font-size:.9rem;text-decoration:none;color:var(--texto-suave);white-space:nowrap}
+.nav a:hover,.nav a[aria-current]{color:#fff}
+.subnav{border-bottom:1px solid var(--linha);background:var(--fundo)}
+.subnav .wrap{display:flex;gap:8px;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:none}
+.subnav a{flex:none;font-size:.84rem;font-weight:600;text-decoration:none;color:var(--texto-suave);padding:6px 12px;border:1px solid var(--linha);border-radius:999px}
+.subnav a:hover{color:#fff;border-color:#555}
+
+.aviso{background:#2a2608;border-bottom:1px solid #4a420b;color:#f5e9a3;font-size:.86rem}
+.aviso .wrap{display:flex;gap:10px;align-items:center;padding-top:10px;padding-bottom:10px}
+.aviso b{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:var(--amarelo-ouro);color:#171717;padding:2px 7px;border-radius:4px;flex:none}
+
+/* Seções */
+.sec{padding:56px 0;border-bottom:1px solid var(--linha)}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:24px}
+.sec-head h2{font-size:clamp(1.6rem,3vw,2.2rem);margin-top:8px}
+.sec-head p{color:var(--texto-suave);max-width:38em;margin-top:8px}
+.sub-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:36px 0 14px}
+.sub-head h3{font-family:var(--display);font-weight:800;font-size:1.25rem}
+.sub-head p{color:var(--texto-suave);font-size:.9rem;max-width:40em;margin-top:4px}
+.p-fonte{color:var(--texto-fraco);font-size:.82rem;margin-top:10px}
+
+/* Como funciona (faixa clara) */
+.light{background:#fff;color:#171717;color-scheme:light}
+.light .rotulo{color:#525252}
+.light .sec-head p{color:#525252}
+.metodo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
+.metodo h3{font-family:var(--display);font-weight:800;font-size:1.25rem;margin-bottom:10px}
+.metodo h4{font-family:var(--display);font-weight:800;font-size:1rem;margin:20px 0 8px}
+.metodo p{color:#404040;margin-bottom:12px;font-size:.95rem}
+.metodo p b{color:#171717}
+.light table{font-size:.8rem}
+.light table th{color:#525252}
+.light th,.light td{border-bottom-color:#e5e5e5;padding:6px 6px}
+.zchip{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.zchip i{width:10px;height:10px;border-radius:50%}
+.fontes{margin:8px 0 0;padding-left:18px;color:#404040;font-size:.9rem}
+.fontes li{margin-bottom:6px}
+.light a{color:#15803d;font-weight:600}
+.metodo-rod{margin-top:36px;padding-top:24px;border-top:1px solid #e5e5e5;display:grid;grid-template-columns:2fr 1fr;gap:40px}
+
+/* Faixa azul */
+.cta{background:var(--azul-anil);padding:48px 0}
+.cta .wrap{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.cta h2{font-size:clamp(1.5rem,3vw,2.1rem);max-width:18em}
+.cta p{color:#dbe4f7;margin-top:8px}
+.foot{padding:28px 0;color:var(--texto-fraco);font-size:.84rem}
+.foot .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+
+.ferr{display:none;border-bottom:1px solid var(--linha);background:var(--fundo)}
+.ferr .wrap{display:flex;gap:8px;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:none}
+.ferr a{flex:none;font-size:.84rem;font-weight:600;text-decoration:none;color:var(--texto-suave);padding:6px 12px;border:1px solid var(--linha);border-radius:999px}
+.ferr a[aria-current]{color:#171717;background:#fff;border-color:#fff}
+@media (max-width:1100px){.nav{display:none}.top .btn{margin-left:auto}.ferr{display:block}}
+.sub-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:36px 0 14px}
+.sub-head h3{font-family:var(--display);font-weight:800;font-size:1.25rem}
+.sub-head p{color:var(--texto-suave);font-size:.9rem;max-width:40em;margin-top:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.fig{position:relative;height:420px;background:var(--superficie);border:1px solid var(--linha);border-radius:12px;overflow:hidden;touch-action:pan-y}
+.fig svg{position:absolute;inset:0;width:100%;height:100%}
+.fig-s{height:280px}
+.p-tip{position:absolute;pointer-events:none;background:#0d0d0d;border:1px solid #3a3a3a;border-radius:8px;padding:8px 10px;font-size:.8rem;line-height:1.45;white-space:nowrap;display:none;z-index:2}
+.p-tip b{font-family:var(--mono);font-weight:500;color:var(--texto-suave)}
+.p-tip i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.p-leg{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:.86rem;color:var(--texto-suave)}
+.p-leg span{display:inline-flex;align-items:center;gap:7px}
+.p-leg i{display:inline-block;width:18px;height:3px;border-radius:2px}
+.p-leg i.area{height:12px;width:14px;border-radius:3px;opacity:.5}
+.p-leg i.dash{height:0}
+.atualizado{color:var(--texto-fraco);font-size:.84rem;margin-top:14px}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--linha);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-suave)}
+tbody tr:last-child td{border-bottom:0}
+@media (max-width:960px){.fig{height:340px}.fig-s{height:240px}}
+/* ETFs */
+.hero{padding:44px 0 40px;border-bottom:1px solid var(--linha)}
+.hero h1{margin-top:12px;font-size:clamp(2.1rem,4.6vw,3.4rem);max-width:15em}
+.hero-sub{color:var(--texto-suave);font-size:1.05rem;max-width:44em;margin-top:14px}
+.topo{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;margin-top:28px}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:14px;overflow:hidden}
+.kpis>div{background:var(--fundo);padding:18px 20px}
+.kpis .v{font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,2.8vw,1.9rem);letter-spacing:-.02em;margin-top:4px;white-space:nowrap}
+.kpis .d{color:var(--texto-suave);font-size:.84rem;margin-top:2px}
+.custo{background:var(--superficie);border:1px solid var(--linha);border-top:4px solid var(--zc,#7a7a7a);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.custo .big{font-family:var(--display);font-weight:800;font-size:clamp(2.4rem,5vw,3.2rem);line-height:.95;letter-spacing:-.03em}
+.custo .ds{color:var(--texto-suave);font-size:.9rem}
+.cmp{position:relative;height:56px;margin-top:6px}
+.cmp .trilho{position:absolute;left:0;right:0;top:26px;height:4px;background:var(--superficie-2);border-radius:2px}
+.cmp .marca{position:absolute;top:14px;transform:translateX(-50%);text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--texto-suave);white-space:nowrap}
+.cmp .marca i{display:block;width:12px;height:12px;border-radius:50%;margin:0 auto 6px;border:2px solid var(--superficie)}
+.seq{font-size:.9rem;color:#f5e9a3;background:#2a2608;border:1px solid #4a420b;border-radius:10px;padding:10px 14px}
+.ctrl{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1.5px solid var(--linha);border-radius:9px;padding:2px;gap:2px}
+.seg button{font:inherit;font-weight:600;font-size:.84rem;min-height:36px;padding:0 12px;border:0;border-radius:7px;background:transparent;color:var(--texto-suave);cursor:pointer}
+.seg button[aria-pressed="true"]{background:#fff;color:#171717}
+.seg button:hover{color:#fff}.seg button[aria-pressed="true"]:hover{color:#171717}
+.g-card{background:var(--superficie);border:1px solid var(--linha);border-radius:12px;padding:18px;margin-top:16px}
+.g-card h3{font-family:var(--display);font-weight:800;font-size:1.15rem}
+.g-card>p{color:var(--texto-suave);font-size:.88rem;margin:6px 0 12px;max-width:52em}
+.g-card .fig{background:var(--fundo)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g2 .g-card{margin-top:16px}
+.tabela{overflow-x:auto;border:1px solid var(--linha);border-radius:12px;margin-top:16px}
+.tabela table{font-size:.9rem}
+.tabela th,.tabela td{padding:9px 14px}
+.tabela td.pos{color:#86d39b}.tabela td.neg{color:#f19a94}
+.metodo2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
+.metodo2 p{color:#404040;margin-bottom:12px;font-size:.95rem}
+.metodo2 h3{font-family:var(--display);font-weight:800;font-size:1.2rem;margin-bottom:10px}
+@media (max-width:960px){.topo,.g2,.metodo2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.kpis{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="../" aria-label="Estratégia Bitcoin, início do site"><img src="data:image/png;base64,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" alt="" width="38" height="28"><b>Estratégia Bitcoin</b></a>
+    <nav class="nav" aria-label="Site"><a href="../#biblioteca">Biblioteca</a><a href="../indicadores/">Indicadores</a><a href="../etfs/" aria-current="page">ETFs</a><a href="../dca/">Calculadora DCA</a><a href="../#newsletter">Newsletter</a></nav>
+    <a class="btn btn-green btn-sm" href="https://estrategiabitcoin.substack.com/subscribe?utm_source=site&amp;utm_medium=eb&amp;utm_campaign=etfs-topo" target="_blank" rel="noopener">Assinar grátis</a>
+  </div>
+</header>
+<nav class="ferr" aria-label="Ferramentas"><div class="wrap"><a href="../indicadores/">Indicadores</a><a href="../etfs/" aria-current="page">ETFs</a><a href="../dca/">Calculadora DCA</a></div></nav>
+<div class="aviso"><div class="wrap"><b>Piloto</b><span>Página nova do site. Dados diários; o detalhe fundo por fundo entra numa próxima versão.</span></div></div>
+
+<main id="topo">
+<section class="hero" aria-labelledby="t-hero">
+  <div class="wrap">
+    <p class="rotulo">ETFs de Bitcoin à vista · Estados Unidos</p>
+    <h1 class="disp" id="t-hero">Os ETFs estão <span class="u">comprando ou vendendo?</span></h1>
+    <p class="hero-sub">Desde janeiro de 2024, fundos como os da BlackRock e da Fidelity compram e vendem bitcoin todo dia conforme os investidores entram e saem. O saldo líquido mostra se o dinheiro institucional está chegando ou indo embora.</p>
+    <div class="topo">
+      <div class="kpis" id="kpis"></div>
+      <div class="custo" id="custo">
+        <p class="rotulo">Custo médio estimado de quem entrou pelos ETFs</p>
+        <div class="big num" id="c-v">–</div>
+        <p class="ds" id="c-d"></p>
+        <div class="cmp" aria-hidden="true"><div class="trilho"></div><div id="c-marcas"></div></div>
+        <p class="seq" id="seq" hidden></p>
+      </div>
+    </div>
+    <p class="atualizado" id="atualizado" style="color:var(--texto-fraco);font-size:.84rem;margin-top:14px"></p>
+  </div>
+</section>
+
+<section class="sec" id="fluxos" aria-labelledby="t-flx">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><p class="rotulo">Fluxo líquido</p><h2 class="disp" id="t-flx">Entradas e saídas</h2>
+      <p>Verde: entrou mais dinheiro do que saiu. Vermelho: saiu mais do que entrou. Em BTC é a quantidade de moedas que os fundos compraram ou venderam; em dólar, a mesma quantidade pelo preço do dia.</p></div>
+    </div>
+    <div class="ctrl" role="group" aria-label="Opções dos gráficos">
+      <div class="seg" role="group" aria-label="Unidade"><button type="button" data-u="btc" aria-pressed="true">BTC</button><button type="button" data-u="usd" aria-pressed="false">US$</button></div>
+      <div class="seg" role="group" aria-label="Agrupamento"><button type="button" data-g="d" aria-pressed="false">Diário</button><button type="button" data-g="s" aria-pressed="true">Semanal</button><button type="button" data-g="m" aria-pressed="false">Mensal</button></div>
+      <div class="seg" role="group" aria-label="Período"><button type="button" data-p="3m" aria-pressed="false">3 meses</button><button type="button" data-p="1a" aria-pressed="true">1 ano</button><button type="button" data-p="tudo" aria-pressed="false">Desde o início</button></div>
+    </div>
+    <div class="g-card"><h3 id="g1-t">Fluxo líquido semanal</h3><p id="g1-p"></p><div class="fig" id="g-fluxo"></div></div>
+    <div class="g2">
+      <div class="g-card"><h3>Preço × custo médio estimado dos ETFs</h3><p>Quando o preço fica abaixo da linha amarela, quem entrou pelos ETFs está, em média, no prejuízo.</p><div class="fig fig-s" id="g-custo"></div><div class="p-leg" id="leg-custo"></div></div>
+      <div class="g-card"><h3>Entrada líquida acumulada</h3><p>Soma de todas as entradas menos as saídas desde 11/01/2024, em BTC. Quando a linha cai, os fundos estão devolvendo moedas.</p><div class="fig fig-s" id="g-acum"></div></div>
+    </div>
+
+    <div class="sub-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:36px 0 0">
+      <div><h3 style="font-family:var(--display);font-weight:800;font-size:1.25rem">Pregão a pregão</h3><p style="color:var(--texto-suave);font-size:.9rem">Os 20 últimos dias com dado.</p></div>
+    </div>
+    <div class="tabela"><table id="tab"></table></div>
+  </div>
+</section>
+
+<section class="sec light" id="metodo" aria-labelledby="t-met">
+  <div class="wrap">
+    <div class="sec-head"><div><p class="rotulo">Como funciona</p><h2 class="disp" id="t-met">De onde vêm os números</h2></div></div>
+    <div class="metodo2">
+      <div>
+        <h3>Fluxo</h3>
+        <p><b>O que é.</b> A soma das criações menos os resgates de cotas de todos os ETFs de Bitcoin à vista negociados nos EUA, convertida em BTC. Os ETFs só operam em dias úteis da bolsa americana.</p>
+        <p><b>Em dólar.</b> O fluxo em BTC multiplicado pelo preço do dia (Coin Metrics). Os números em dólar que saem na imprensa usam o valor das cotas de cada fundo, então podem diferir um pouco.</p>
+        <p><b>Leitura.</b> Fluxo é uma peça do quebra-cabeça, não um sinal de direção. Entradas fortes costumam acompanhar altas, mas parte delas vem de operações de arbitragem, não de convicção de longo prazo.</p>
+      </div>
+      <div>
+        <h3>Custo médio estimado</h3>
+        <p><b>A conta.</b> Cada dia de entrada líquida é tratado como compra ao preço do dia; cada dia de saída líquida, como venda ao custo médio do momento (que não muda o custo médio). O resultado é o preço médio pago pelas moedas que entraram pelos ETFs desde 11/01/2024.</p>
+        <p><b>Limites.</b> É uma estimativa da carteira como um todo, não de cada investidor. Ficam de fora as moedas que o GBTC, da Grayscale, já tinha antes de virar ETF.</p>
+        <h3 style="margin-top:20px">Fontes</h3>
+        <ul class="fontes" id="fontes"><li>BGeometrics: fluxo líquido diário dos ETFs, em BTC.</li><li><a href="https://coinmetrics.io/community-network-data/" target="_blank" rel="noopener">Coin Metrics Community</a> (CC BY-NC 4.0): preço diário.</li></ul>
+        <p style="color:#737373;font-size:.88rem;margin-top:12px">Atualizado todo dia às 7h17 (Brasília). Conteúdo educacional; não é recomendação de investimento.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="cta" aria-labelledby="t-cta"><div class="wrap"><div><h2 class="disp" id="t-cta">A leitura dos indicadores, toda semana, no seu e-mail.</h2><p>A newsletter explica o que mudou e o que os livros da Biblioteca dizem sobre isso.</p></div><a class="btn btn-green" href="https://estrategiabitcoin.substack.com/subscribe?utm_source=site&amp;utm_medium=eb&amp;utm_campaign=etfs-cta-final" target="_blank" rel="noopener">Assinar grátis</a></div></section>
+</main>
+<footer class="foot"><div class="wrap"><span>© 2026 Estratégia Bitcoin. Conteúdo educacional; não é recomendação de investimento.</span><span>Dados públicos, atualizados uma vez por dia.</span></div></footer>
+
+<script type="application/json" id="d-etf"></script>
+<script>/* Gráficos do Estratégia Bitcoin (SVG, sem biblioteca). EBC.chart(box, rows, opções) */
+var EBC=(function(){
+  var NS="http://www.w3.org/2000/svg";
+  var ZC={acumulacao:"#3d74e0",intermediaria:"#a3a3a3",euforia:"#e5534b"};
+  function br(n,d){return Number(n).toLocaleString("pt-BR",{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+  function dm(iso){var p=iso.slice(0,10).split("-");return p.length<3?p[1]+"/"+p[0]:p[2]+"/"+p[1]+"/"+p[0];}
+  function usd(v){if(v==null)return "sem dado";if(Math.abs(v)>=1000)return "US$ "+br(v/1000,1)+" mil";return "US$ "+br(v,Math.abs(v)<10?2:0);}
+  function zonaDe(m,zs){for(var i=0;i<zs.length;i++){if(m<zs[i].ate)return zs[i];}return zs[zs.length-1];}
+  function chart(box,rows,o){
+    box.innerHTML="";var svg=document.createElementNS(NS,"svg");box.appendChild(svg);
+    var tip=document.createElement("div");tip.className="p-tip";box.appendChild(tip);
+    function draw(){
+      var W=box.clientWidth,H=box.clientHeight;if(!W||!H||!rows.length)return;
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      svg.setAttribute("viewBox","0 0 "+W+" "+H);
+      var narrow=W<520,L=narrow?50:66,R=W-(narrow?10:16),T=14,B=H-26;
+      var vals=[];rows.forEach(function(r){o.series.forEach(function(s){var v=r[s.k];if(v!=null&&isFinite(v)&&(!o.log||v>0))vals.push(v);});});
+      (o.hl||[]).forEach(function(h){vals.push(h.v);}); if(o.bars||o.zero)vals.push(0);
+      if(!vals.length)return;
+      var lo=Math.min.apply(null,vals),hi=Math.max.apply(null,vals);
+      if(o.log){lo=Math.log10(lo*0.92);hi=Math.log10(hi*1.08);}else{var pad=(hi-lo)*0.08||1;lo-=pad;hi+=pad;if(o.bars&&lo>0)lo=0;}
+      var y=function(v){var t=o.log?Math.log10(v):v;return B-(t-lo)/(hi-lo)*(B-T);};
+      var n=rows.length,x=function(i){return L+(n<2?(R-L)/2:i/(n-1))*(R-L);};
+      function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);svg.appendChild(e);return e;}
+      if(o.zonas){for(var i=0;i<n;i++){var r=rows[i];if(r.mvrv==null)continue;var z=zonaDe(r.mvrv,o.zonas);if(!z.cor)continue;
+        var x0=i?(x(i-1)+x(i))/2:L,x1=i<n-1?(x(i)+x(i+1))/2:R;el("rect",{x:x0,y:T,width:Math.max(1,x1-x0),height:B-T,fill:z.cor,opacity:.14});}}
+      var ticks=[];
+      if(o.log){var a=Math.floor(lo),b=Math.ceil(hi);for(var e=a;e<=b;e++){[1,2,5].forEach(function(m){var v=m*Math.pow(10,e);var t=Math.log10(v);if(t>=lo&&t<=hi)ticks.push(v);});}
+        if(ticks.length>7)ticks=ticks.filter(function(v){var m=v/Math.pow(10,Math.floor(Math.log10(v)));return Math.round(m)===1||Math.round(m)===5;});}
+      else{var st=(hi-lo)/4,mag=Math.pow(10,Math.floor(Math.log10(st))),nice=[1,2,2.5,5,10].map(function(k){return k*mag;}).find(function(k){return k>=st;});for(var v=Math.ceil(lo/nice)*nice;v<=hi;v+=nice)ticks.push(+v.toFixed(6));}
+      ticks.forEach(function(v){el("line",{x1:L,x2:R,y1:y(v),y2:y(v),stroke:"#2b2b2b"});var t=el("text",{x:L-6,y:y(v)+4,fill:"#8a8a8a","font-size":11,"text-anchor":"end","font-family":"Inter"});t.textContent=o.fy?o.fy(v):br(v,Math.abs(v)<10?1:0);});
+      var span=n?(new Date(rows[n-1].d.length<8?rows[n-1].d+"-01":rows[n-1].d)-new Date(rows[0].d.length<8?rows[0].d+"-01":rows[0].d))/864e5:0;
+      var step=span>3000?(narrow?4:2):span>900?1:0,MES=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+      if(step){var vist={};rows.forEach(function(r,i){var aa=r.d.slice(0,4);if(vist[aa])return;vist[aa]=1;if((+aa)%step)return;if(i===0&&r.d.slice(5,10)!=="01-01"&&n>60)return;var t=el("text",{x:x(i),y:H-8,fill:"#8a8a8a","font-size":11,"text-anchor":"middle","font-family":"Inter"});t.textContent=aa;el("line",{x1:x(i),x2:x(i),y1:B,y2:B+4,stroke:"#444"});});}
+      else{var ult="",cada=span>400?(narrow?6:3):span>120?(narrow?3:1):1;rows.forEach(function(r,i){var m=r.d.slice(0,7);if(m===ult)return;ult=m;var mi=+r.d.slice(5,7);if((mi-1)%cada)return;if(i===0&&n>40)return;var t=el("text",{x:x(i),y:H-8,fill:"#8a8a8a","font-size":11,"text-anchor":"middle","font-family":"Inter"});t.textContent=MES[mi-1]+(mi===1||span<=120?" "+r.d.slice(2,4):"");});}
+      (o.hl||[]).forEach(function(h){el("line",{x1:L,x2:R,y1:y(h.v),y2:y(h.v),stroke:h.c,"stroke-dasharray":"5 5","stroke-width":1.5});var t=el("text",{x:R-4,y:y(h.v)-5,fill:h.c,"font-size":11,"text-anchor":"end","font-family":"Inter"});t.textContent=h.t;});
+      if(o.bars){var s=o.series[0],bw=Math.max(1,(R-L)/n*0.78);rows.forEach(function(r,i){var v=r[s.k];if(v==null)return;var y0=y(0),y1=y(v);
+          el("rect",{x:x(i)-bw/2,y:Math.min(y0,y1),width:bw,height:Math.max(1,Math.abs(y1-y0)),fill:o.barCor?o.barCor(r,v):(v>=0?"#4cbf7a":"#e5534b"),opacity:.9});});
+        el("line",{x1:L,x2:R,y1:y(0),y2:y(0),stroke:"#555"});}
+      else{o.series.forEach(function(s){var d="",pen=false;rows.forEach(function(r,i){var v=r[s.k];if(v==null||!isFinite(v)||(o.log&&v<=0)){pen=false;return;}d+=(pen?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1);pen=true;});
+        el("path",{d:d,fill:"none",stroke:s.c,"stroke-width":s.w||2,"stroke-dasharray":s.dash||"","stroke-linejoin":"round"});});}
+      if(o.zero&&!o.bars)el("line",{x1:L,x2:R,y1:y(0),y2:y(0),stroke:"#555"});
+      var cur=el("line",{x1:0,x2:0,y1:T,y2:B,stroke:"#888","stroke-width":1,opacity:0});
+      function mover(ev){var bb=box.getBoundingClientRect(),px=ev.clientX-bb.left;if(px<L-4||px>R+4){sair();return;}
+        var i=Math.round((px-L)/(R-L)*(n-1));i=Math.max(0,Math.min(n-1,i));var r=rows[i];
+        cur.setAttribute("x1",x(i));cur.setAttribute("x2",x(i));cur.setAttribute("opacity",.7);
+        var h="<b>"+(o.rotulo?o.rotulo(r):dm(r.d))+"</b>";o.series.concat(o.extra||[]).forEach(function(s){var v=r[s.k];if(v==null)return;h+="<br><i style='background:"+s.c+"'></i>"+s.n+": "+(s.f?s.f(v):usd(v));});
+        if(o.zonas&&r.mvrv!=null)h+="<br>Faixa: "+zonaDe(r.mvrv,o.zonas).nome;
+        tip.innerHTML=h;tip.style.display="block";var tw=tip.offsetWidth;var tx=x(i)+12;if(tx+tw>W-4)tx=x(i)-tw-12;tip.style.left=Math.max(4,tx)+"px";tip.style.top=(T+6)+"px";}
+      function sair(){tip.style.display="none";cur.setAttribute("opacity",0);}
+      box.onpointermove=mover;box.onpointerdown=mover;box.onpointerleave=sair;
+    }
+    draw();
+    if(box._ro)box._ro.disconnect();box._ro=new ResizeObserver(draw);box._ro.observe(box);
+  }
+  function legenda(id,itens){var e=document.getElementById(id);if(!e)return;e.innerHTML=itens.map(function(s){return "<span><i class='"+(s.area?"area":s.dash?"dash":"")+"' style='"+(s.dash?"border-top:2px dashed "+s.c:"background:"+s.c)+"'></i>"+s.n+"</span>";}).join("");}
+  function carregar(id,url){
+    var t=document.getElementById(id), b=t?t.textContent.trim():"";
+    if (b && b.charAt(0)==="{") return Promise.resolve(JSON.parse(b));
+    return fetch(url+"?t="+Date.now(),{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(url+": "+r.status); return r.json(); });
+  }
+  return {chart:chart,legenda:legenda,br:br,dm:dm,usd:usd,carregar:carregar,ZC:ZC};
+})();
+</script>
+<script>
+(function(){
+  var br=EBC.br, dm=EBC.dm;
+  var VERDE="#4cbf7a", VERM="#e5534b";
+  function sgn(v,d){return (v>0?"+":v<0?"−":"")+br(Math.abs(v),d);}
+  function btc(v){return sgn(v,0)+" BTC";}
+  function usdc(v){var a=Math.abs(v),s=v>0?"+":v<0?"−":"";if(a>=1e9)return s+"US$ "+br(a/1e9,2)+" bi";if(a>=1e6)return s+"US$ "+br(a/1e6,0)+" mi";return s+"US$ "+br(a/1e3,0)+" mil";}
+  function usdp(v){return "US$ "+br(v/1000,1)+" mil";}
+  var MES=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+
+  EBC.carregar("d-etf","../ferramentas/etf.json").then(function(E){
+    var c=E.cols, F=E.fluxos.map(function(a){var o={};c.forEach(function(k,i){o[k]=a[i];});return o;});
+    /* custo médio e acumulado */
+    var q=0,custo=0,acum=0;
+    F.forEach(function(r){ r.fluxo_usd=r.fluxo_btc*r.preco; acum+=r.fluxo_btc; r.acum=acum;
+      if(r.fluxo_btc>0){custo+=r.fluxo_btc*r.preco;q+=r.fluxo_btc;} else if(q>0){var m=custo/q;q=Math.max(0,q+r.fluxo_btc);custo=m*q;}
+      r.custo=q>0?custo/q:null; });
+    var u=F[F.length-1], pAtual=E.preco_atual||u.preco;
+    var cm=u.custo, dif=(pAtual/cm-1)*100;
+
+    /* KPIs */
+    var ult5=F.slice(-5), mesK=u.d.slice(0,7), doMes=F.filter(function(r){return r.d.slice(0,7)===mesK;});
+    function soma(a,k){return a.reduce(function(s,r){return s+r[k];},0);}
+    var mesNome=MES[+mesK.slice(5)-1]+"/"+mesK.slice(2,4);
+    var K=[["Último pregão · "+dm(u.d).slice(0,5),u.fluxo_btc,u.fluxo_usd],["Últimos 5 pregões",soma(ult5,"fluxo_btc"),soma(ult5,"fluxo_usd")],
+      ["No mês ("+mesNome+")",soma(doMes,"fluxo_btc"),soma(doMes,"fluxo_usd")],["Desde 11/01/2024",u.acum,soma(F,"fluxo_usd")]];
+    document.getElementById("kpis").innerHTML=K.map(function(k){return '<div><p class="rotulo">'+k[0]+'</p><div class="v num '+(k[1]>=0?"pos":"neg")+'">'+btc(k[1])+'</div><p class="d">≈ '+usdc(k[2])+'</p></div>';}).join("");
+
+    /* Custo médio */
+    var cbox=document.getElementById("custo"); cbox.style.setProperty("--zc", dif>=0?VERDE:VERM);
+    document.getElementById("c-v").textContent=usdp(cm);
+    document.getElementById("c-d").textContent="Preço em "+dm(E.preco_data||u.d)+": "+usdp(pAtual)+". Em média, quem entrou pelos ETFs está "+(dif>=0?br(dif,0)+"% no lucro.":br(-dif,0)+"% no prejuízo.");
+    var lo=Math.min(cm,pAtual)*0.85, hi=Math.max(cm,pAtual)*1.1, pos=function(v){return ((v-lo)/(hi-lo)*100).toFixed(1)+"%";};
+    document.getElementById("c-marcas").innerHTML='<div class="marca" style="left:'+pos(cm)+'"><i style="background:#fddd10"></i>custo '+usdp(cm)+'</div><div class="marca" style="left:'+pos(pAtual)+';top:'+(Math.abs(cm-pAtual)/(hi-lo)<0.25?"-2px":"14px")+'"><i style="background:#fff"></i>preço '+usdp(pAtual)+'</div>';
+    var nseq=0,sin=Math.sign(u.fluxo_btc);for(var i=F.length-1;i>=0&&Math.sign(F[i].fluxo_btc)===sin;i--)nseq++;
+    if(nseq>=3){var s=document.getElementById("seq");s.hidden=false;s.textContent=nseq+" pregões seguidos de "+(sin<0?"saída":"entrada")+" líquida, somando "+btc(soma(F.slice(-nseq),"fluxo_btc"))+".";}
+    document.getElementById("atualizado").textContent="Fluxo até "+dm(u.d)+". "+(E.avisos&&E.avisos.length?"Aviso: "+E.avisos[E.avisos.length-1]:"");
+
+    /* Tabela */
+    document.getElementById("tab").innerHTML="<thead><tr><th>Pregão</th><th>Fluxo (BTC)</th><th>Fluxo (≈ US$)</th><th>Preço</th><th>Acumulado (BTC)</th></tr></thead><tbody>"+
+      F.slice(-20).reverse().map(function(r){var cl=r.fluxo_btc>=0?"pos":"neg";return "<tr><td>"+dm(r.d)+"</td><td class='num "+cl+"'>"+sgn(r.fluxo_btc,0)+"</td><td class='num "+cl+"'>"+usdc(r.fluxo_usd)+"</td><td class='num'>"+usdp(r.preco)+"</td><td class='num'>"+br(r.acum,0)+"</td></tr>";}).join("")+"</tbody>";
+
+    /* Gráficos */
+    var st={u:"btc",g:"s",p:"1a"};
+    function agrupar(rows,g){
+      if(g==="d")return rows.map(function(r){return {d:r.d,btc:r.fluxo_btc,usd:r.fluxo_usd,n:1};});
+      var out=[],chave=null,cur=null;
+      rows.forEach(function(r){var k;
+        if(g==="m")k=r.d.slice(0,7);
+        else{var dt=new Date(r.d+"T12:00:00Z"),dw=(dt.getUTCDay()+6)%7;dt.setUTCDate(dt.getUTCDate()-dw);k=dt.toISOString().slice(0,10);}
+        if(k!==chave){cur={d:g==="m"?k+"-01":k,btc:0,usd:0,n:0};out.push(cur);chave=k;}
+        cur.btc+=r.fluxo_btc;cur.usd+=r.fluxo_usd;cur.n++;});
+      return out;}
+    function corte(p){if(p==="tudo")return "0000";var d=new Date(u.d+"T12:00:00Z");d.setUTCMonth(d.getUTCMonth()-(p==="3m"?3:12));return d.toISOString().slice(0,10);}
+    var NOME={d:"diário",s:"semanal",m:"mensal"};
+    function desenhar(){
+      var ci=corte(st.p), base=F.filter(function(r){return r.d>=ci;});
+      var rows=agrupar(base,st.g).map(function(r){r.v=st.u==="btc"?r.btc:r.usd;return r;});
+      document.getElementById("g1-t").textContent="Fluxo líquido "+NOME[st.g]+(st.u==="btc"?" (BTC)":" (≈ US$)");
+      var ent=rows.filter(function(r){return r.v>0;}).length;
+      document.getElementById("g1-p").textContent=rows.length+" "+(st.g==="d"?"pregões":st.g==="s"?"semanas":"meses")+" no período: "+ent+" com entrada e "+(rows.length-ent)+" com saída. Soma: "+(st.u==="btc"?btc(soma(rows,"btc")):usdc(soma(rows,"usd")))+".";
+      EBC.chart(document.getElementById("g-fluxo"),rows,{bars:true,series:[{k:"v",n:"Fluxo",c:VERDE,f:function(v){return st.u==="btc"?btc(v):usdc(v);}}],
+        rotulo:function(r){return st.g==="m"?MES[+r.d.slice(5,7)-1]+"/"+r.d.slice(0,4):st.g==="s"?"Semana de "+dm(r.d):dm(r.d);},
+        fy:function(v){return st.u==="btc"?(Math.abs(v)>=1000?br(v/1000,0)+" mil":br(v,0)):(Math.abs(v)>=1e9?br(v/1e9,1)+" bi":br(v/1e6,0)+" mi");}});
+      EBC.chart(document.getElementById("g-custo"),base,{series:[{k:"preco",n:"Preço",c:"#ffffff",w:1.6,f:usdp},{k:"custo",n:"Custo médio estimado",c:"#fddd10",w:2.4,f:usdp}],fy:function(v){return br(v/1000,0)+" mil";}});
+      EBC.chart(document.getElementById("g-acum"),base,{series:[{k:"acum",n:"Acumulado",c:"#5b8def",w:2.2,f:function(v){return br(v,0)+" BTC";}}],fy:function(v){return br(v/1000,0)+" mil";}});
+    }
+    EBC.legenda("leg-custo",[{n:"Preço",c:"#ffffff"},{n:"Custo médio estimado dos ETFs",c:"#fddd10"}]);
+    document.querySelectorAll("[data-u],[data-g],[data-p]").forEach(function(b){b.addEventListener("click",function(){
+      var k=b.dataset.u?"u":b.dataset.g?"g":"p"; st[k]=b.dataset[k];
+      document.querySelectorAll("[data-"+k+"]").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});
+      if(k==="p"&&st.p==="tudo"&&st.g==="d"){st.g="s";document.querySelectorAll("[data-g]").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.g==="s"?"true":"false");});}
+      desenhar();});});
+    desenhar();
+  }).catch(function(e){console.error(e);document.getElementById("kpis").innerHTML='<div><p>Não foi possível carregar os dados dos ETFs agora. Tente recarregar a página.</p></div>';});
+})();
+</script>
+</body>
+</html>
