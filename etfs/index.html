@@ -313,6 +313,56 @@ var EBC=(function(){
   return {chart:chart,legenda:legenda,br:br,dm:dm,usd:usd,carregar:carregar,ZC:ZC};
 })();
 </script>
+<script>/* Dados ao vivo do Estratégia Bitcoin.
+   Preço: WebSocket público da Coinbase (BTC-USD); se cair, preço do mempool a cada 30 s.
+   Rede: API do mempool (blocos, taxas, fila). Hoje mempool.space; quando o nó do EB estiver no ar,
+   basta trocar FONTES.mempool pelo endereço do nó (o mempool roda sobre o Bitcoin Core com a mesma API).
+   Dólar: AwesomeAPI (USD-BRL) a cada 5 min. Nada aqui entra nas notas diárias: é só leitura ao vivo. */
+var EBLive=(function(){
+  var FONTES={mempool:"https://mempool.space",precoWS:"wss://ws-feed.exchange.coinbase.com",dolar:"https://economia.awesomeapi.com.br/json/last/USD-BRL"};
+  var st={preco:null,precoHora:null,precoFonte:null,dolar:null,bloco:null,taxas:null,fila:null,ok:false};
+  var ouv=[],ws=null,tPoll=null,tRede=null,tDolar=null,tentativas=0,pausado=false;
+  function avisar(){ouv.forEach(function(f){try{f(st);}catch(e){console.error(e);}});}
+  function j(url){return fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});}
+  function preco(v,fonte){v=+v;if(!(v>1000))return;st.preco=v;st.precoHora=Date.now();st.precoFonte=fonte;st.ok=true;avisar();}
+  function conectarWS(){
+    if(pausado||typeof WebSocket==="undefined")return pollPreco();
+    try{ws=new WebSocket(FONTES.precoWS);}catch(e){return pollPreco();}
+    var aberto=false,ultimo=0;
+    ws.onopen=function(){aberto=true;tentativas=0;ws.send(JSON.stringify({type:"subscribe",product_ids:["BTC-USD"],channels:["ticker"]}));};
+    ws.onmessage=function(ev){var m;try{m=JSON.parse(ev.data);}catch(e){return;}
+      if(m.type==="ticker"&&m.price){var agora=Date.now();if(agora-ultimo<1000)return;ultimo=agora;preco(m.price,"Coinbase");}};
+    ws.onclose=function(){ws=null;if(pausado)return;tentativas++;
+      if(!aberto||tentativas>3)pollPreco(); else setTimeout(conectarWS,2000*tentativas);};
+    ws.onerror=function(){try{ws.close();}catch(e){}};
+    setTimeout(function(){if(!st.preco)pollPreco();},8000);
+  }
+  function pollPreco(){
+    if(tPoll)return;
+    function um(){if(pausado)return;j(FONTES.mempool+"/api/v1/prices").then(function(p){preco(p.USD,"mempool");}).catch(function(){});}
+    um();tPoll=setInterval(um,30000);
+  }
+  function rede(){
+    if(pausado)return;
+    var b=FONTES.mempool+"/api";
+    Promise.allSettled([j(b+"/v1/blocks"),j(b+"/v1/fees/recommended"),j(b+"/mempool")]).then(function(r){
+      if(r[0].status==="fulfilled"&&r[0].value.length){var k=r[0].value[0];st.bloco={altura:k.height,hora:k.timestamp*1000,txs:k.tx_count,pool:k.extras&&k.extras.pool?k.extras.pool.name:null};}
+      if(r[1].status==="fulfilled")st.taxas=r[1].value;
+      if(r[2].status==="fulfilled")st.fila={txs:r[2].value.count,vbytes:r[2].value.vsize};
+      if(r.some(function(x){return x.status==="fulfilled";}))avisar();
+    });
+  }
+  function dolar(){if(pausado)return;j(FONTES.dolar).then(function(d){var v=+(d.USDBRL&&d.USDBRL.bid);if(v>1){st.dolar=v;avisar();}}).catch(function(){});}
+  function iniciar(){pausado=false;conectarWS();rede();dolar();tRede=setInterval(rede,30000);tDolar=setInterval(dolar,300000);}
+  function parar(){pausado=true;if(ws){try{ws.close();}catch(e){}ws=null;}clearInterval(tPoll);tPoll=null;clearInterval(tRede);clearInterval(tDolar);}
+  document.addEventListener("visibilitychange",function(){if(document.hidden)parar();else if(ouv.length)iniciar();});
+  return {
+    ouvir:function(f){ouv.push(f);if(ouv.length===1)iniciar();},
+    estado:function(){return st;},
+    fontes:FONTES
+  };
+})();
+</script>
 <script>
 (function(){
   var br=EBC.br, dm=EBC.dm;
@@ -344,9 +394,12 @@ var EBC=(function(){
     /* Custo médio */
     var cbox=document.getElementById("custo"); cbox.style.setProperty("--zc", dif>=0?VERDE:VERM);
     document.getElementById("c-v").textContent=usdp(cm);
-    document.getElementById("c-d").textContent="Preço em "+dm(E.preco_data||u.d)+": "+usdp(pAtual)+". Em média, quem entrou pelos ETFs está "+(dif>=0?br(dif,0)+"% no lucro.":br(-dif,0)+"% no prejuízo.");
-    var lo=Math.min(cm,pAtual)*0.85, hi=Math.max(cm,pAtual)*1.1, pos=function(v){return ((v-lo)/(hi-lo)*100).toFixed(1)+"%";};
-    document.getElementById("c-marcas").innerHTML='<div class="marca" style="left:'+pos(cm)+'"><i style="background:#fddd10"></i>custo '+usdp(cm)+'</div><div class="marca" style="left:'+pos(pAtual)+';top:'+(Math.abs(cm-pAtual)/(hi-lo)<0.25?"-2px":"14px")+'"><i style="background:#fff"></i>preço '+usdp(pAtual)+'</div>';
+    function custoVs(p,vivo){var dif=(p/cm-1)*100;cbox.style.setProperty("--zc", dif>=0?VERDE:VERM);
+      document.getElementById("c-d").textContent=(vivo?"Preço agora":"Preço em "+dm(E.preco_data||u.d))+": "+usdp(p)+". Em média, quem entrou pelos ETFs está "+(dif>=0?br(dif,0)+"% no lucro.":br(-dif,0)+"% no prejuízo.");
+      var lo=Math.min(cm,p)*0.85, hi=Math.max(cm,p)*1.1, pos=function(v){return ((v-lo)/(hi-lo)*100).toFixed(1)+"%";};
+      document.getElementById("c-marcas").innerHTML='<div class="marca" style="left:'+pos(cm)+'"><i style="background:#fddd10"></i>custo '+usdp(cm)+'</div><div class="marca" style="left:'+pos(p)+';top:'+(Math.abs(cm-p)/(hi-lo)<0.25?"-2px":"14px")+'"><i style="background:#fff"></i>'+(vivo?"agora ":"preço ")+usdp(p)+'</div>';}
+    custoVs(pAtual,false);
+    if(window.EBLive)EBLive.ouvir(function(st){if(st.preco)custoVs(st.preco,true);});
     var nseq=0,sin=Math.sign(u.fluxo_btc);for(var i=F.length-1;i>=0&&Math.sign(F[i].fluxo_btc)===sin;i--)nseq++;
     if(nseq>=3){var s=document.getElementById("seq");s.hidden=false;s.textContent=nseq+" pregões seguidos de "+(sin<0?"saída":"entrada")+" líquida, somando "+btc(soma(F.slice(-nseq),"fluxo_btc"))+".";}
     document.getElementById("atualizado").textContent="Fluxo até "+dm(u.d)+". "+(E.avisos&&E.avisos.length?"Aviso: "+E.avisos[E.avisos.length-1]:"");

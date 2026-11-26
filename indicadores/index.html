@@ -73,6 +73,19 @@ img{max-width:100%;display:block}
 .sub-head p{color:var(--texto-suave);font-size:.9rem;max-width:40em;margin-top:4px}
 .p-fonte{color:var(--texto-fraco);font-size:.82rem;margin-top:10px}
 
+.vivo{margin-top:24px;border:1px solid var(--linha);border-radius:14px;background:var(--superficie);overflow:hidden}
+.vivo-top{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--linha)}
+.vivo .dot{width:9px;height:9px;border-radius:50%;background:#7a7a7a;flex:none}
+.vivo.on .dot{background:#4cbf7a;box-shadow:0 0 0 0 rgba(76,191,122,.6);animation:pulso 2s infinite}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(76,191,122,.55)}70%{box-shadow:0 0 0 8px rgba(76,191,122,0)}100%{box-shadow:0 0 0 0 rgba(76,191,122,0)}}
+.vivo-g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--linha)}
+.vivo-g>div{background:var(--superficie);padding:14px 20px}
+.vivo .v{font-family:var(--display);font-weight:800;font-size:clamp(1.2rem,2.3vw,1.55rem);letter-spacing:-.02em;margin-top:4px;white-space:nowrap}
+.vivo .d{color:var(--texto-suave);font-size:.8rem;margin-top:2px}
+.vivo .flash{animation:flash .6s}
+@keyframes flash{0%{color:var(--amarelo-ouro)}100%{color:inherit}}
+@media (max-width:960px){.vivo-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.vivo.on .dot{animation:none}}
 /* Topo: resumo das três leituras */
 .hero{padding:44px 0 40px;border-bottom:1px solid var(--linha)}
 .hero h1{margin-top:12px;font-size:clamp(2.1rem,4.6vw,3.4rem);max-width:16em}
@@ -283,6 +296,15 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
     <p class="rotulo">Indicadores do Bitcoin · on-chain e macro</p>
     <h1 class="disp" id="t-hero">Em que fase do ciclo <span class="u">o Bitcoin está?</span></h1>
     <p class="hero-sub">Três leituras numa página: a nota do Termômetro, a distância entre o preço e o custo médio da rede no Indicador Richter e a leitura de domingo do Painel on-chain.</p>
+    <div class="vivo" id="vivo" aria-live="off">
+      <div class="vivo-top"><span class="dot" id="v-dot"></span><span class="rotulo" id="v-status">Conectando aos dados ao vivo…</span></div>
+      <div class="vivo-g">
+        <div><p class="rotulo">Preço agora</p><div class="v num" id="v-preco">–</div><p class="d" id="v-preco-d"></p></div>
+        <div><p class="rotulo">Zona Richter agora</p><div class="v" id="v-zona">–</div><p class="d" id="v-zona-d"></p></div>
+        <div><p class="rotulo">Último bloco</p><div class="v num" id="v-bloco">–</div><p class="d" id="v-bloco-d"></p></div>
+        <div><p class="rotulo">Taxas da rede</p><div class="v num" id="v-taxa">–</div><p class="d" id="v-taxa-d"></p></div>
+      </div>
+    </div>
     <div class="precos" id="precos"></div>
     <div class="tres">
       <a class="lcard" href="#termometro" id="c-term">
@@ -536,7 +558,7 @@ function iniciar(D){
 
   /* Preços de referência (topo da página) */
   var nums = [
-    {r:"Preço", v:fmtUSD(D.preco), d:"em " + fmtData(D.data_ref)},
+    {r:"Fechamento do dia", v:fmtUSD(D.preco), d:"em " + fmtData(D.data_ref)},
     {r:"12 meses", v:(D.var_365d>0?"+":"")+fmtN(D.var_365d*100,1)+"%", d:"variação do preço", cls:D.var_365d<0?"neg":"pos"},
     {r:"Preço realizado", v:fmtUSD(D.preco_realizado), d:"custo médio de todas as moedas"},
     {r:"Média 200 semanas", v:fmtUSD(D.mm200s_valor), d:"memória de onde o preço esteve"}
@@ -828,6 +850,7 @@ EB.carregar("d-termometro","../termometro/dados.json").then(iniciar).catch(funct
     var cols=S.cols;function obj(a){var o={};cols.forEach(function(c,i){o[c]=a[i];});return o;}
     var sem=S.semanal.map(obj),dia=S.diario.map(obj),u=S.ultimo,zs=S.zonas;
     var zona=zs.filter(function(z){return z.id===u.zona;})[0];
+    EB.richter={realizado:u.realizado,zonas:zs,preco_dia:u.preco,data:u.data||S.data_ref,mvrv:u.mvrv};document.dispatchEvent(new Event("eb-richter"));
 
     /* Cartão-resumo */
     var c=document.getElementById("c-rich"); c.style.setProperty("--zc",ZCARD[u.zona]);
@@ -857,6 +880,96 @@ EB.carregar("d-termometro","../termometro/dados.json").then(iniciar).catch(funct
       chart(document.getElementById("g-mm"),rows,{log:p!=="1a",series:[{k:"preco",n:"Preço",c:"#ffffff",w:1.8},{k:"mm200s",n:"Média de 200 semanas",c:"#fddd10",w:2.4}],fy:function(v){return v>=1000?br(v/1000,0)+" mil":br(v,0);}});
     });
   }).catch(function(e){console.error(e);document.getElementById("c-rich-z").textContent="Dados indisponíveis";});
+})();
+</script>
+<script>/* Dados ao vivo do Estratégia Bitcoin.
+   Preço: WebSocket público da Coinbase (BTC-USD); se cair, preço do mempool a cada 30 s.
+   Rede: API do mempool (blocos, taxas, fila). Hoje mempool.space; quando o nó do EB estiver no ar,
+   basta trocar FONTES.mempool pelo endereço do nó (o mempool roda sobre o Bitcoin Core com a mesma API).
+   Dólar: AwesomeAPI (USD-BRL) a cada 5 min. Nada aqui entra nas notas diárias: é só leitura ao vivo. */
+var EBLive=(function(){
+  var FONTES={mempool:"https://mempool.space",precoWS:"wss://ws-feed.exchange.coinbase.com",dolar:"https://economia.awesomeapi.com.br/json/last/USD-BRL"};
+  var st={preco:null,precoHora:null,precoFonte:null,dolar:null,bloco:null,taxas:null,fila:null,ok:false};
+  var ouv=[],ws=null,tPoll=null,tRede=null,tDolar=null,tentativas=0,pausado=false;
+  function avisar(){ouv.forEach(function(f){try{f(st);}catch(e){console.error(e);}});}
+  function j(url){return fetch(url,{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});}
+  function preco(v,fonte){v=+v;if(!(v>1000))return;st.preco=v;st.precoHora=Date.now();st.precoFonte=fonte;st.ok=true;avisar();}
+  function conectarWS(){
+    if(pausado||typeof WebSocket==="undefined")return pollPreco();
+    try{ws=new WebSocket(FONTES.precoWS);}catch(e){return pollPreco();}
+    var aberto=false,ultimo=0;
+    ws.onopen=function(){aberto=true;tentativas=0;ws.send(JSON.stringify({type:"subscribe",product_ids:["BTC-USD"],channels:["ticker"]}));};
+    ws.onmessage=function(ev){var m;try{m=JSON.parse(ev.data);}catch(e){return;}
+      if(m.type==="ticker"&&m.price){var agora=Date.now();if(agora-ultimo<1000)return;ultimo=agora;preco(m.price,"Coinbase");}};
+    ws.onclose=function(){ws=null;if(pausado)return;tentativas++;
+      if(!aberto||tentativas>3)pollPreco(); else setTimeout(conectarWS,2000*tentativas);};
+    ws.onerror=function(){try{ws.close();}catch(e){}};
+    setTimeout(function(){if(!st.preco)pollPreco();},8000);
+  }
+  function pollPreco(){
+    if(tPoll)return;
+    function um(){if(pausado)return;j(FONTES.mempool+"/api/v1/prices").then(function(p){preco(p.USD,"mempool");}).catch(function(){});}
+    um();tPoll=setInterval(um,30000);
+  }
+  function rede(){
+    if(pausado)return;
+    var b=FONTES.mempool+"/api";
+    Promise.allSettled([j(b+"/v1/blocks"),j(b+"/v1/fees/recommended"),j(b+"/mempool")]).then(function(r){
+      if(r[0].status==="fulfilled"&&r[0].value.length){var k=r[0].value[0];st.bloco={altura:k.height,hora:k.timestamp*1000,txs:k.tx_count,pool:k.extras&&k.extras.pool?k.extras.pool.name:null};}
+      if(r[1].status==="fulfilled")st.taxas=r[1].value;
+      if(r[2].status==="fulfilled")st.fila={txs:r[2].value.count,vbytes:r[2].value.vsize};
+      if(r.some(function(x){return x.status==="fulfilled";}))avisar();
+    });
+  }
+  function dolar(){if(pausado)return;j(FONTES.dolar).then(function(d){var v=+(d.USDBRL&&d.USDBRL.bid);if(v>1){st.dolar=v;avisar();}}).catch(function(){});}
+  function iniciar(){pausado=false;conectarWS();rede();dolar();tRede=setInterval(rede,30000);tDolar=setInterval(dolar,300000);}
+  function parar(){pausado=true;if(ws){try{ws.close();}catch(e){}ws=null;}clearInterval(tPoll);tPoll=null;clearInterval(tRede);clearInterval(tDolar);}
+  document.addEventListener("visibilitychange",function(){if(document.hidden)parar();else if(ouv.length)iniciar();});
+  return {
+    ouvir:function(f){ouv.push(f);if(ouv.length===1)iniciar();},
+    estado:function(){return st;},
+    fontes:FONTES
+  };
+})();
+</script>
+<script>
+/* ===== Ao vivo ===== */
+(function(){
+  var box=document.getElementById("vivo");
+  function br(n,d){return Number(n).toLocaleString("pt-BR",{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+  function haQuanto(ms){var m=Math.round((Date.now()-ms)/60000);return m<1?"agora há pouco":m===1?"há 1 minuto":m<60?"há "+m+" minutos":"há "+Math.floor(m/60)+" h "+(m%60)+" min";}
+  var NOMEZ={acumulacao:"Acumulação",intermediaria:"Intermediária",euforia:"Euforia"};
+  var CORZ={acumulacao:"#3d74e0",intermediaria:"#7a7a7a",euforia:"#e5534b"};
+  var ultPreco=null;
+  function pintar(st){
+    var R=EB.richter;
+    if(st.preco){
+      box.classList.add("on");
+      var el=document.getElementById("v-preco");el.textContent="US$ "+br(st.preco,0);
+      if(ultPreco&&Math.round(ultPreco)!==Math.round(st.preco)){el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");}
+      ultPreco=st.preco;
+      var partes=[];if(st.dolar)partes.push("R$ "+br(st.preco*st.dolar/1000,1)+" mil");
+      if(R&&R.preco_dia){var v=(st.preco/R.preco_dia-1)*100;partes.push((v>=0?"+":"")+br(v,1)+"% sobre o fechamento de "+EB.dm(R.data).slice(0,5));}
+      document.getElementById("v-preco-d").textContent=partes.join(" · ");
+      if(R&&R.realizado){
+        var mv=st.preco/R.realizado,z=R.zonas.filter(function(q){return mv<q.ate;})[0]||R.zonas[R.zonas.length-1];
+        var zv=document.getElementById("v-zona");zv.textContent=z.nome||NOMEZ[z.id];zv.style.color=z.id==="intermediaria"?"#fff":CORZ[z.id];
+        var dsv=(mv-1)*100;
+        document.getElementById("v-zona-d").textContent=br(Math.abs(dsv),1)+"% "+(dsv>=0?"acima":"abaixo")+" do preço realizado · MVRV "+br(mv,2);
+        var cv=document.getElementById("c-rich-v");if(cv){cv.textContent=(dsv>0?"+":"")+br(dsv,1)+"%";document.getElementById("c-rich-pin").style.left=(Math.min(mv,4)/4*100).toFixed(1)+"%";}
+      }
+      var seg=Math.round((Date.now()-st.precoHora)/1000);
+      document.getElementById("v-status").textContent="Ao vivo · preço "+(st.precoFonte==="Coinbase"?"da Coinbase, a cada segundo":"do mempool.space, a cada 30 s")+" · rede pelo mempool.space";
+    }
+    if(st.bloco){document.getElementById("v-bloco").textContent=br(st.bloco.altura,0);
+      document.getElementById("v-bloco-d").textContent=haQuanto(st.bloco.hora)+" · "+br(st.bloco.txs,0)+" transações"+(st.bloco.pool?" · "+st.bloco.pool:"");}
+    if(st.taxas){document.getElementById("v-taxa").textContent=br(st.taxas.fastestFee,0)+" sat/vB";
+      document.getElementById("v-taxa-d").textContent="próximo bloco · 1 hora: "+br(st.taxas.hourFee,0)+" sat/vB"+(st.fila?" · fila: "+br(st.fila.txs/1000,0)+" mil transações":"");}
+  }
+  var falhou=setTimeout(function(){if(!EBLive.estado().ok){document.getElementById("v-status").textContent="Sem conexão ao vivo agora. Os números abaixo são os do dia.";}},12000);
+  EBLive.ouvir(pintar);
+  document.addEventListener("eb-richter",function(){pintar(EBLive.estado());});
+  setInterval(function(){var st=EBLive.estado();if(st.bloco)document.getElementById("v-bloco-d").textContent=haQuanto(st.bloco.hora)+" · "+br(st.bloco.txs,0)+" transações"+(st.bloco.pool?" · "+st.bloco.pool:"");},30000);
 })();
 </script>
 </body>
