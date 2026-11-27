@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Calculadora DCA com o Indicador Richter · Estratégia Bitcoin</title>
-<meta name="description" content="Simule aportes periódicos em bitcoin desde 2014, em reais ou dólares, e compare o aporte fixo com um aporte que muda conforme a faixa do Indicador Richter (MVRV).">
+<title>Calculadora DCA com a Escala de Richter · Estratégia Bitcoin</title>
+<meta name="description" content="Simule aportes periódicos em bitcoin desde 2014, em reais ou dólares, e compare o aporte fixo com um aporte que muda conforme a faixa da Escala de Richter (MVRV).">
 <meta name="theme-color" content="#171717">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
   --fundo:#171717;--superficie:#1f1f1f;--superficie-2:#262626;
   --texto:#ffffff;--texto-suave:#a3a3a3;--texto-fraco:#737373;--linha:#333333;
   --verde-botao:#15803d;--amarelo-ouro:#fddd10;--azul-anil:#21428b;
-  /* Zonas de ciclo (Termômetro e Indicador Richter): frio = valor, quente = euforia */
+  /* Zonas de ciclo (Termômetro e Escala de Richter): frio = valor, quente = euforia */
   --z2:#3d74e0;--z1:#8fb0ee;--z0:#7a7a7a;--zm1:#f2c94c;--zm2:#e5534b;
   --display:"Inter Tight","SF Pro Display",system-ui,-apple-system,sans-serif;
   --sans:Inter,"SF Pro Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -198,9 +198,9 @@ input[type=number]:focus,select:focus{outline:none;border-color:var(--amarelo-ou
 <main id="topo">
 <section class="hero" aria-labelledby="t-hero">
   <div class="wrap">
-    <p class="rotulo">Calculadora DCA · Indicador Richter</p>
+    <p class="rotulo">Calculadora DCA · Escala de Richter</p>
     <h1 class="disp" id="t-hero">E se o seu aporte <span class="u">mudasse com o ciclo?</span></h1>
-    <p class="hero-sub">DCA é comprar um valor fixo todo mês ou toda semana, sem tentar adivinhar o preço. Aqui você compara isso com uma regra simples: aportar mais quando o preço está perto do custo médio da rede e menos quando está esticado, pelas faixas do Indicador Richter.</p>
+    <p class="hero-sub">DCA é comprar um valor fixo todo mês ou toda semana, sem tentar adivinhar o preço. Aqui você compara isso com uma regra simples: aportar mais quando o preço está perto do custo médio da rede e menos quando está esticado, pelas faixas da Escala de Richter.</p>
   </div>
 </section>
 
@@ -228,7 +228,7 @@ input[type=number]:focus,select:focus{outline:none;border-color:var(--amarelo-ou
     <div class="hoje" id="hoje"><div><p class="rotulo" id="hoje-r">Pela sua regra, hoje</p><div class="v num" id="hoje-v">–</div></div><p id="hoje-d" style="max-width:28em"></p></div>
     <div class="duo">
       <div class="est" style="--c:#ffffff"><h3><i></i>DCA simples</h3><dl id="r-dca"></dl></div>
-      <div class="est" style="--c:#fddd10"><h3><i></i>DCA com o Indicador Richter</h3><dl id="r-ric"></dl></div>
+      <div class="est" style="--c:#fddd10"><h3><i></i>DCA com a Escala de Richter</h3><dl id="r-ric"></dl></div>
     </div>
     <p class="veredito" id="veredito"></p>
     <div class="g-card"><h3>Valor da carteira e total aportado</h3><p>Fundo azul: MVRV abaixo de 1 (acumulação). Fundo vermelho: MVRV de 3 ou mais (euforia).</p><div class="fig" id="g-val"></div><div class="p-leg" id="leg-val"></div></div>
@@ -243,7 +243,7 @@ input[type=number]:focus,select:focus{outline:none;border-color:var(--amarelo-ou
     <div class="metodo2">
       <div>
         <h3>A regra</h3>
-        <p><b>Indicador Richter.</b> Compara o preço de mercado com o preço realizado, o custo médio de todas as moedas gravado na blockchain. A razão entre os dois é o MVRV. Abaixo de 1, o detentor médio está no prejuízo (acumulação); acima de 3, muito no lucro (euforia).</p>
+        <p><b>Escala de Richter.</b> Compara o preço de mercado com o preço realizado, o custo médio de todas as moedas gravado na blockchain. A razão entre os dois é o MVRV. Abaixo de 1, o detentor médio está no prejuízo (acumulação); acima de 3, muito no lucro (euforia).</p>
         <p><b>Faixas.</b> A calculadora divide a zona intermediária em duas (MVRV de 1 a 2 e de 2 a 3) para a regra ter mais graduação. Os multiplicadores são seus: as regras prontas são só pontos de partida.</p>
         <p><b>Comparação justa.</b> A regra do Richter pode aportar mais ou menos dinheiro que o DCA simples no total. Por isso olhe também o preço médio e a quantidade de BTC por real aportado, que não dependem do total.</p>
       </div>

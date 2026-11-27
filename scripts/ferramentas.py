@@ -7,7 +7,7 @@ Grava os dados das páginas ETFs (etfs/) e Calculadora DCA (dca/).
                           com o preço do dia (para converter em US$ e estimar o custo médio)
   ferramentas/dolar.json  dólar médio mensal (para a calculadora em reais)
 
-A calculadora também lê painel/series.json (preço e MVRV semanais, Indicador Richter).
+A calculadora também lê painel/series.json (preço e MVRV semanais, Escala de Richter).
 
 Uso:
   python scripts/ferramentas.py --pasta ferramentas

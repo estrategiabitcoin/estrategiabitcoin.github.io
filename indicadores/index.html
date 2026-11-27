@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Indicadores do Bitcoin · Estratégia Bitcoin</title>
-<meta name="description" content="Termômetro do Bitcoin, Indicador Richter e Painel on-chain numa página só: em que fase do ciclo o Bitcoin está, com data e fonte de cada número.">
+<meta name="description" content="Termômetro do Bitcoin, Escala de Richter e Painel on-chain numa página só: em que fase do ciclo o Bitcoin está, com data e fonte de cada número.">
 <meta name="theme-color" content="#171717">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
   --fundo:#171717;--superficie:#1f1f1f;--superficie-2:#262626;
   --texto:#ffffff;--texto-suave:#a3a3a3;--texto-fraco:#737373;--linha:#333333;
   --verde-botao:#15803d;--amarelo-ouro:#fddd10;--azul-anil:#21428b;
-  /* Zonas de ciclo (Termômetro e Indicador Richter): frio = valor, quente = euforia */
+  /* Zonas de ciclo (Termômetro e Escala de Richter): frio = valor, quente = euforia */
   --z2:#3d74e0;--z1:#8fb0ee;--z0:#7a7a7a;--zm1:#f2c94c;--zm2:#e5534b;
   --display:"Inter Tight","SF Pro Display",system-ui,-apple-system,sans-serif;
   --sans:Inter,"SF Pro Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -158,7 +158,7 @@ th:first-child,td:first-child{text-align:left}
 th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-suave)}
 .t-tabela{overflow-x:auto;margin-top:14px}
 
-/* Indicador Richter */
+/* Escala de Richter */
 .r-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}
 .kpi{background:var(--superficie);border:1px solid var(--linha);border-radius:12px;padding:14px 16px}
 .kpi .v{font-family:var(--display);font-weight:800;font-size:1.35rem;margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -281,7 +281,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
 <nav class="ferr" aria-label="Ferramentas"><div class="wrap"><a href="../indicadores/" aria-current="page">Indicadores</a><a href="../etfs/">ETFs</a><a href="../dca/">Calculadora DCA</a></div></nav>
 <nav class="subnav" aria-label="Seções desta página">
   <div class="wrap">
-    <a href="#termometro">Termômetro</a><a href="#richter">Indicador Richter</a><a href="#painel">Painel da semana</a><a href="#graficos">Gráficos</a><a href="#macro">Macro</a><a href="#metodo">Como funciona</a>
+    <a href="#termometro">Termômetro</a><a href="#richter">Escala de Richter</a><a href="#painel">Painel da semana</a><a href="#graficos">Gráficos</a><a href="#macro">Macro</a><a href="#metodo">Como funciona</a>
   </div>
 </nav>
 
@@ -291,7 +291,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
   <div class="wrap">
     <p class="rotulo">Indicadores do Bitcoin · on-chain e macro</p>
     <h1 class="disp" id="t-hero">Em que fase do ciclo <span class="u">o Bitcoin está?</span></h1>
-    <p class="hero-sub">Três leituras numa página: a nota do Termômetro, a distância entre o preço e o custo médio da rede no Indicador Richter e a leitura de domingo do Painel on-chain.</p>
+    <p class="hero-sub">Três leituras numa página: a nota do Termômetro, a distância entre o preço e o custo médio da rede na Escala de Richter e a leitura de domingo do Painel on-chain.</p>
     <div class="vivo" id="vivo" aria-live="off">
       <div class="vivo-top"><span class="dot" id="v-dot"></span><span class="rotulo" id="v-status">Conectando aos dados ao vivo…</span></div>
       <div class="vivo-g">
@@ -316,7 +316,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
         <span class="ir">Ver os 7 indicadores ↓</span>
       </a>
       <a class="lcard" href="#richter" id="c-rich">
-        <p class="rotulo">Indicador Richter · spot × realizado</p>
+        <p class="rotulo">Escala de Richter · spot × realizado</p>
         <div class="big num" id="c-rich-v">–</div>
         <div class="zn"><i></i><span id="c-rich-z">carregando</span></div>
         <div class="mwrap" aria-hidden="true">
@@ -371,11 +371,11 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
   </div>
 </section>
 
-<!-- INDICADOR RICHTER -->
+<!-- ESCALA DE RICHTER -->
 <section class="sec" id="richter" aria-labelledby="t-rich">
   <div class="wrap">
     <div class="sec-head">
-      <div><p class="rotulo">Indicador Richter · diário</p><h2 class="disp" id="t-rich">Preço spot × preço realizado</h2></div>
+      <div><p class="rotulo">Escala de Richter · diário</p><h2 class="disp" id="t-rich">Preço spot × preço realizado</h2></div>
       <p>O preço das corretoras reage a alavancagem e notícias; o preço realizado é o custo médio de todas as moedas, gravado na blockchain. A distância entre os dois mostra se o mercado, em média, está no lucro ou no prejuízo. Método de Ricardo Richter, publicado em <a class="u" href="https://estrategiabitcoin.substack.com/p/o-erro-que-90-das-pessoas-cometem" target="_blank" rel="noopener">"Preço realizado: o erro que 90% das pessoas cometem ao analisar o Bitcoin"</a>.</p>
     </div>
     <div class="r-kpis" id="r-kpis"></div>
@@ -419,7 +419,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
       <div class="per" role="group" aria-label="Período dos gráficos"><button type="button" data-per="1a">1 ano</button><button type="button" data-per="4a">4 anos</button><button type="button" data-per="tudo">Tudo</button></div>
     </div>
     <div class="g-grid">
-      <div class="g-card"><h3>MVRV e as zonas do Indicador Richter</h3><p>Valor de mercado dividido pelo valor realizado. Abaixo de 1, acumulação; de 3 a 4 ou mais, euforia.</p><div class="fig fig-s" id="g-mvrv"></div></div>
+      <div class="g-card"><h3>MVRV e as zonas da Escala de Richter</h3><p>Valor de mercado dividido pelo valor realizado. Abaixo de 1, acumulação; de 3 a 4 ou mais, euforia.</p><div class="fig fig-s" id="g-mvrv"></div></div>
       <div class="g-card"><h3>Capitalização realizada: variação semanal</h3><p>Subidas fortes indicam realização de lucros; quedas indicam moedas trocando de mãos com prejuízo, sinal de capitulação.</p><div class="fig fig-s" id="g-rcv"></div></div>
       <div class="g-card g-wide"><h3>Preço e média de 200 semanas</h3><p>A média dos últimos quatro anos de preço. Não é piso: é memória de onde o preço esteve.</p><div class="fig fig-s" id="g-mm"></div><div class="p-leg" id="leg-mm"></div></div>
     </div>
@@ -454,7 +454,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
       </div>
       <div>
         <p class="rotulo">Diário</p>
-        <h3>Indicador Richter</h3>
+        <h3>Escala de Richter</h3>
         <p><b>Pergunta:</b> o detentor médio está no lucro ou no prejuízo?</p>
         <p>Compara o preço spot com o preço realizado (custo médio de todas as moedas, pelo preço da última vez que cada uma se moveu). A razão entre os dois é o MVRV.</p>
         <p><b>Zonas.</b> MVRV abaixo de 1: acumulação. De 1 a 3: intermediária. De 3 a 4 ou mais: euforia e distribuição.</p>
@@ -480,7 +480,7 @@ th{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;
           <li>Painel da semana: fontes indicadas em cada sensor.</li>
         </ul>
       </div>
-      <div><h3>Atualização</h3><p id="m-atual">Termômetro e Indicador Richter: todo dia às 7h17 (Brasília). Painel: aos domingos.</p><p style="color:#737373;font-size:.88rem">Conteúdo educacional. Não é recomendação de investimento.</p></div>
+      <div><h3>Atualização</h3><p id="m-atual">Termômetro e Escala de Richter: todo dia às 7h17 (Brasília). Painel: aos domingos.</p><p style="color:#737373;font-size:.88rem">Conteúdo educacional. Não é recomendação de investimento.</p></div>
     </div>
   </div>
 </section>
@@ -561,7 +561,7 @@ function iniciar(D){
   ];
   document.getElementById("precos").innerHTML = nums.map(function(n){
     return '<div><p class="rotulo">'+n.r+'</p><div class="v num '+(n.cls||"")+'">'+n.v+'</div><p class="d">'+n.d+'</p></div>'; }).join("");
-  document.getElementById("at-t").textContent = "Termômetro e Indicador Richter com dados de " + fmtData(D.data_ref) + ".";
+  document.getElementById("at-t").textContent = "Termômetro e Escala de Richter com dados de " + fmtData(D.data_ref) + ".";
 
   /* Cartão-resumo */
   var s = IND.reduce(function(a,i){return a+i.nota;},0)/IND.length, z=zonaDe(s);
@@ -788,7 +788,7 @@ EB.carregar("d-termometro","../termometro/dados.json").then(iniciar).catch(funct
 </script>
 
 <script>
-/* ===== Indicador Richter e gráficos ===== */
+/* ===== Escala de Richter e gráficos ===== */
 (function(){
   var ZC={acumulacao:"#3d74e0",intermediaria:"#a3a3a3",euforia:"#e5534b"};
   var ZCARD={acumulacao:"#3d74e0",intermediaria:"#7a7a7a",euforia:"#e5534b"};

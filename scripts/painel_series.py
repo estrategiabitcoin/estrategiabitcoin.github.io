@@ -3,7 +3,7 @@
 Painel on-chain · Estratégia Bitcoin
 Monta as séries dos gráficos da página painel/ e grava painel/series.json.
 
-Indicador Richter (spot × realizado): a oscilação entre o preço spot e o preço
+Escala de Richter (spot × realizado): a oscilação entre o preço spot e o preço
 realizado, com as zonas do MVRV, o custo dos holders de curto prazo (STH) e de
 longo prazo (LTH) e a variação semanal da capitalização realizada.
 Método publicado em "Preço realizado: o erro que 90% das pessoas cometem ao
